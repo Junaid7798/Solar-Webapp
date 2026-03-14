@@ -1,195 +1,227 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Menu, X, Phone, Mail, MessageCircle, Zap } from 'lucide-react';
+import { Menu, X, Phone, Mail, MessageCircle, Sun, Zap } from 'lucide-react';
 
 export const Navbar = () => {
   const { t, language, setLanguage } = useTranslation();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled]         = useState(false);
+  const [isMobileMenuOpen, setMobileMenu]   = useState(false);
+  const [activeSection, setActiveSection]   = useState('home');
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 60);
+      const ids = ['home', 'about', 'services', 'gallery', 'calculator', 'get-quote'];
+      for (const id of [...ids].reverse()) {
+        const el = document.getElementById(id);
+        if (el && window.scrollY >= el.offsetTop - 130) { setActiveSection(id); break; }
+      }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const navLinks = [
-    { id: 'home', label: t('nav', 'home') },
-    { id: 'about', label: t('nav', 'about') },
-    { id: 'services', label: t('nav', 'services') },
-    { id: 'gallery', label: 'Gallery' },
+    { id: 'home',       label: t('nav', 'home') },
+    { id: 'about',      label: t('nav', 'about') },
+    { id: 'services',   label: t('nav', 'services') },
+    { id: 'gallery',    label: 'Gallery' },
     { id: 'calculator', label: t('nav', 'calculator') },
   ];
 
-  const scrollToSection = (id: string) => {
-    setIsMobileMenuOpen(false);
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+  const go = (id: string) => {
+    setMobileMenu(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <>
       <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled ? 'py-4' : 'py-6'
-        }`}
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed top-0 left-0 right-0 z-50 flex justify-center"
+        style={{ paddingTop: isScrolled ? '10px' : '18px', transition: 'padding 0.4s ease' }}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <div className={`glass rounded-2xl px-6 py-3 flex items-center justify-between transition-all duration-500 ${
-            isScrolled ? 'bg-sky-deep/80 border-white/10' : 'bg-transparent border-transparent'
-          }`}>
-            {/* Logo */}
-            <div 
-              className="flex items-center gap-2 cursor-pointer group"
-              onClick={() => scrollToSection('home')}
+        <div
+          className="flex items-center gap-6 px-5 py-3 rounded-2xl transition-all duration-500"
+          style={{
+            background: isScrolled ? 'rgba(7,9,15,0.92)' : 'rgba(7,9,15,0.35)',
+            backdropFilter: 'blur(28px)',
+            border: isScrolled
+              ? '1px solid rgba(245,158,11,0.14)'
+              : '1px solid rgba(255,255,255,0.06)',
+            boxShadow: isScrolled
+              ? '0 8px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,158,11,0.06) inset'
+              : 'none',
+            maxWidth: '900px',
+            width: 'calc(100vw - 40px)',
+          }}
+        >
+          {/* Logo */}
+          <button onClick={() => go('home')} className="cursor-pointer flex items-center gap-2.5 shrink-0 group">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110"
+              style={{ background: 'linear-gradient(135deg, #F59E0B, #FCD34D)' }}
             >
-              <div className="w-10 h-10 rounded-xl bg-sun flex items-center justify-center shadow-[0_0_20px_rgba(255,179,71,0.3)] group-hover:scale-110 transition-transform">
-                <Zap className="text-sky-deep" size={24} />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-display font-bold text-xl text-white tracking-tighter leading-none">
-                  SOLAREDGE <span className="text-sun">PRO</span>
-                </span>
-                <span className="text-[8px] text-silver/40 font-bold uppercase tracking-[0.3em] leading-none mt-1">
-                  Mission Control
-                </span>
-              </div>
+              <Sun size={17} style={{ color: '#07090F' }} strokeWidth={2.5} />
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="font-display font-extrabold text-[17px] text-white tracking-tighter">
+                SOLAR<span style={{ color: '#F59E0B' }}>EDGE</span>
+              </span>
+              <span className="text-[7px] font-bold uppercase tracking-[0.35em]" style={{ color: '#64748B' }}>Maharashtra · Pro</span>
+            </div>
+          </button>
+
+          {/* Desktop nav links */}
+          <div className="hidden lg:flex items-center gap-1">
+            {navLinks.map(link => {
+              const isActive = activeSection === link.id;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => go(link.id)}
+                  className="cursor-pointer relative px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all duration-200"
+                  style={{ color: isActive ? '#F59E0B' : '#64748B' }}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-active-pill"
+                      className="absolute inset-0 rounded-xl"
+                      style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.18)' }}
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10">{link.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right: lang + CTA + mobile toggle */}
+          <div className="flex items-center gap-3 ml-auto">
+            {/* Language switcher */}
+            <div className="hidden lg:flex items-center gap-0.5 p-1 rounded-xl"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              {(['en', 'hi', 'mr'] as const).map(lang => (
+                <button
+                  key={lang}
+                  onClick={() => setLanguage(lang)}
+                  className="cursor-pointer px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all duration-200"
+                  style={{
+                    background: language === lang ? '#F59E0B' : 'transparent',
+                    color:      language === lang ? '#07090F' : '#64748B',
+                  }}
+                >
+                  {lang === 'en' ? 'EN' : lang === 'hi' ? 'हि' : 'म'}
+                </button>
+              ))}
             </div>
 
-            {/* Desktop Nav */}
-            <div className="hidden lg:flex items-center gap-8">
-              <div className="flex items-center gap-6">
-                {navLinks.map((link) => (
-                  <button
-                    key={link.id}
-                    onClick={() => scrollToSection(link.id)}
-                    className="text-silver/60 hover:text-sun font-bold transition-colors text-[10px] uppercase tracking-widest relative group"
-                  >
-                    {link.label}
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-sun transition-all group-hover:w-full" />
-                  </button>
-                ))}
-              </div>
+            {/* CTA */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => go('get-quote')}
+              className="cursor-pointer hidden lg:flex px-5 py-2.5 rounded-xl text-[11px] font-extrabold uppercase tracking-widest items-center gap-1.5"
+              style={{
+                background: 'linear-gradient(135deg, #F59E0B, #FCD34D)',
+                color: '#07090F',
+                boxShadow: '0 0 20px rgba(245,158,11,0.25)',
+              }}
+            >
+              <Zap size={13} />
+              {t('nav', 'getQuote')}
+            </motion.button>
 
-              {/* Language Switcher */}
-              <div className="flex items-center gap-1 bg-white/5 rounded-full p-1 border border-white/10">
-                {(['en', 'hi', 'mr'] as const).map((lang) => (
-                  <button
-                    key={lang}
-                    onClick={() => setLanguage(lang)}
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all ${
-                      language === lang ? 'bg-sun text-sky-deep shadow-lg' : 'text-silver/40 hover:text-white'
-                    }`}
-                  >
-                    {lang === 'en' ? 'EN' : lang === 'hi' ? 'हि' : 'म'}
-                  </button>
-                ))}
-              </div>
-
-              {/* CTA */}
-              <button 
-                onClick={() => scrollToSection('get-quote')}
-                className="bg-sun hover:bg-sun-light text-sky-deep font-bold px-6 py-2.5 rounded-xl transition-all transform hover:scale-105 shadow-[0_0_15px_rgba(255,179,71,0.2)] text-[10px] uppercase tracking-widest"
-              >
-                {t('nav', 'getQuote')}
-              </button>
-            </div>
-
-            {/* Mobile Menu Toggle */}
+            {/* Mobile toggle */}
             <button
-              className="lg:hidden text-white p-2 glass rounded-xl"
-              onClick={() => setIsMobileMenuOpen(true)}
+              onClick={() => setMobileMenu(true)}
+              className="cursor-pointer lg:hidden p-2 rounded-xl text-white"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
               aria-label="Open menu"
             >
-              <Menu size={24} />
+              <Menu size={21} />
             </button>
           </div>
         </div>
       </motion.nav>
 
-      {/* Mobile Overlay */}
+      {/* ── Mobile overlay ── */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="fixed inset-0 z-[100] bg-sky-deep/95 backdrop-blur-xl flex flex-col"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            className="fixed inset-0 z-[100] flex flex-col"
+            style={{ background: 'rgba(7,9,15,0.97)', backdropFilter: 'blur(28px)' }}
           >
-            <div className="p-6 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-sun flex items-center justify-center">
-                  <span className="text-sky-deep font-bold text-xl">S</span>
+            {/* Header */}
+            <div className="p-5 flex justify-between items-center border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #F59E0B, #FCD34D)' }}>
+                  <Sun size={17} style={{ color: '#07090F' }} strokeWidth={2.5} />
                 </div>
-                <span className="font-display font-bold text-2xl text-white">SolarEdge Pro</span>
+                <span className="font-display font-extrabold text-xl text-white">SOLAR<span style={{ color: '#F59E0B' }}>EDGE</span></span>
               </div>
-              <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-white/80 hover:text-white p-2 bg-white/10 rounded-full"
-                aria-label="Close menu"
-              >
-                <X size={24} />
+              <button onClick={() => setMobileMenu(false)}
+                className="cursor-pointer p-2.5 rounded-full"
+                style={{ background: 'rgba(255,255,255,0.06)', color: '#64748B' }}
+                aria-label="Close menu">
+                <X size={21} />
               </button>
             </div>
 
-            <div className="flex-1 flex flex-col justify-center px-8 gap-6">
-              {[...navLinks, { id: 'get-quote', label: t('nav', 'getQuote'), isGold: true }, { id: 'contact', label: t('nav', 'contact'), isGold: false }].map((link, i) => (
+            {/* Links */}
+            <div className="flex-1 flex flex-col justify-center px-8 gap-2">
+              {[...navLinks, { id: 'get-quote', label: t('nav', 'getQuote') }].map((link, i) => (
                 <motion.button
                   key={link.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 + i * 0.08 }}
-                  onClick={() => scrollToSection(link.id)}
-                  className={`text-left font-display text-4xl font-bold uppercase tracking-wider ${
-                    (link as any).isGold ? 'text-sun' : 'text-white hover:text-sun/80'
-                  }`}
+                  initial={{ opacity: 0, x: -24 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.04 + i * 0.07 }}
+                  onClick={() => go(link.id)}
+                  className="cursor-pointer text-left font-display font-extrabold text-4xl uppercase tracking-tight py-2 border-b transition-colors"
+                  style={{
+                    borderColor: 'rgba(255,255,255,0.04)',
+                    color: link.id === 'get-quote' ? '#F59E0B' : 'rgba(255,255,255,0.75)',
+                  }}
                 >
                   {link.label}
                 </motion.button>
               ))}
             </div>
 
-            <motion.div 
+            {/* Bottom */}
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              className="p-8 border-t border-white/10 flex flex-col gap-6"
+              transition={{ delay: 0.5 }}
+              className="p-6 border-t flex items-center justify-between"
+              style={{ borderColor: 'rgba(255,255,255,0.04)' }}
             >
-              <div className="flex justify-between items-center">
-                <div className="flex gap-4">
-                  <a href="#" className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-sun hover:text-sky-deep transition-colors">
-                    <MessageCircle size={20} />
+              <div className="flex gap-3">
+                {[MessageCircle, Phone, Mail].map((Icon, i) => (
+                  <a key={i} href="#"
+                    className="cursor-pointer w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748B' }}>
+                    <Icon size={17} />
                   </a>
-                  <a href="#" className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-sun hover:text-sky-deep transition-colors">
-                    <Phone size={20} />
-                  </a>
-                  <a href="#" className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-sun hover:text-sky-deep transition-colors">
-                    <Mail size={20} />
-                  </a>
-                </div>
-                
-                {/* Mobile Language Switcher */}
-                <div className="flex items-center gap-2 bg-white/10 rounded-full p-1">
-                  {(['en', 'hi', 'mr'] as const).map((lang) => (
-                    <button
-                      key={lang}
-                      onClick={() => setLanguage(lang)}
-                      className={`px-3 py-1.5 rounded-full text-sm font-bold transition-all ${
-                        language === lang ? 'bg-sun text-sky-deep' : 'text-white/60 hover:text-white'
-                      }`}
-                    >
-                      {lang === 'en' ? 'EN' : lang === 'hi' ? 'हि' : 'म'}
-                    </button>
-                  ))}
-                </div>
+                ))}
+              </div>
+              <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                {(['en', 'hi', 'mr'] as const).map(lang => (
+                  <button key={lang} onClick={() => setLanguage(lang)}
+                    className="cursor-pointer px-3 py-1.5 rounded-lg text-sm font-bold transition-all"
+                    style={{ background: language === lang ? '#F59E0B' : 'transparent', color: language === lang ? '#07090F' : '#64748B' }}>
+                    {lang === 'en' ? 'EN' : lang === 'hi' ? 'हि' : 'म'}
+                  </button>
+                ))}
               </div>
             </motion.div>
           </motion.div>

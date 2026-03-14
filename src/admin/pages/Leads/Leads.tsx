@@ -18,21 +18,37 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
+interface Lead {
+  timestamp?: string; Timestamp?: string;
+  name?: string; Name?: string;
+  phone?: string; Phone?: string;
+  email?: string; Email?: string;
+  city?: string; City?: string;
+  address?: string; Address?: string;
+  services?: string; Services?: string;
+  bill?: string; Bill?: string;
+  size?: string; Size?: string;
+  roof?: string; Roof?: string;
+  time?: string; Time?: string;
+  message?: string; Message?: string;
+  [key: number]: string;
+}
+
 export const Leads = () => {
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState('');
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [serviceFilter, setServiceFilter] = useState('All');
 
   // Quotation Drawer state
   const [isQuoteDrawerOpen, setIsQuoteDrawerOpen] = useState(false);
-  const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
-  const GOOGLE_SHEETS_URL = import.meta.env.VITE_GOOGLE_SHEETS_URL || 'https://script.google.com/macros/s/AKfycbwUmgoqjRHlLb72LP9HhTQYVwCRWy8vQapr4OPoubFCQnGZckoqQ_IeYX4nCZQ6_5hjQw/exec';
+  const GOOGLE_SHEETS_URL = import.meta.env.VITE_GOOGLE_SHEETS_URL as string | undefined;
 
-  const openQuoteDrawer = (lead: any) => {
+  const openQuoteDrawer = (lead: Lead) => {
     setSelectedLead(lead);
     setIsQuoteDrawerOpen(true);
   };
@@ -49,10 +65,11 @@ export const Leads = () => {
     try {
       const response = await fetch(GOOGLE_SHEETS_URL);
       if (!response.ok) throw new Error('Failed to fetch data');
-      const data = await response.json();
-      setLeads(data.reverse());
-    } catch (err: any) {
-      setFetchError(err.message || 'Failed to load leads');
+      const data: Lead[] = await response.json();
+      setLeads([...data].reverse());
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load leads';
+      setFetchError(message);
     } finally {
       setIsLoading(false);
     }
@@ -197,9 +214,9 @@ export const Leads = () => {
             <p className="text-xs">No leads found.</p>
           </div>
         ) : (
-          filteredLeads.map((lead, i) => (
-            <motion.div 
-              key={i} 
+          filteredLeads.map((lead) => (
+            <motion.div
+              key={`${lead.timestamp ?? lead.Timestamp ?? ''}-${lead.phone ?? lead.Phone ?? ''}`}
               variants={item}
               className="bg-white p-4 rounded-2xl shadow-sm border border-sky/5 space-y-3"
             >
@@ -279,8 +296,8 @@ export const Leads = () => {
                   </td>
                 </tr>
               ) : (
-                filteredLeads.map((lead, i) => (
-                  <tr key={i} className="border-b border-sky/5 hover:bg-sky/5 transition-colors">
+                filteredLeads.map((lead) => (
+                  <tr key={`${lead.timestamp ?? lead.Timestamp ?? ''}-${lead.phone ?? lead.Phone ?? ''}`} className="border-b border-sky/5 hover:bg-sky/5 transition-colors">
                     <td className="p-4 text-xs text-gray-500 whitespace-nowrap">
                       {new Date(lead.timestamp || lead.Timestamp || lead[0]).toLocaleDateString()}
                     </td>

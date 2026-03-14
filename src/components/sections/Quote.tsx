@@ -40,17 +40,15 @@ export const Quote = () => {
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitted(true);
-    
-    const GOOGLE_SHEETS_URL = import.meta.env.VITE_GOOGLE_SHEETS_URL || 'https://script.google.com/macros/s/AKfycbwUmgoqjRHlLb72LP9HhTQYVwCRWy8vQapr4OPoubFCQnGZckoqQ_IeYX4nCZQ6_5hjQw/exec';
-    
+
+    const GOOGLE_SHEETS_URL = import.meta.env.VITE_GOOGLE_SHEETS_URL as string | undefined;
+
     if (GOOGLE_SHEETS_URL) {
       try {
         await fetch(GOOGLE_SHEETS_URL, {
           method: 'POST',
           mode: 'no-cors', // Required for Google Apps Script
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             timestamp: new Date().toISOString(),
             name: data.name,
@@ -63,38 +61,40 @@ export const Quote = () => {
             size: data.size,
             roof: data.roof,
             time: data.time,
-            message: data.message
+            message: data.message,
           }),
         });
-      } catch (error) {
-        console.error('Error saving to Google Sheets:', error);
+      } catch (err: unknown) {
+        console.error('Error saving to Google Sheets:', err);
       }
     }
 
-    // Simulate API call / WhatsApp redirect
-    setTimeout(() => {
-      const msg = encodeURIComponent(`🌞 NEW SOLAR QUOTE REQUEST
-👤 Name: ${data.name}
-📞 Phone: ${data.phone}
-✉️ Email: ${data.email}
-📍 City: ${data.city}
-🏠 Address: ${data.address}
-⚡ Service: ${data.services.join(', ')}
-💰 Monthly Bill: ₹${data.bill}
-📐 System Size: ${data.size}
-🏠 Roof Type: ${data.roof}
-🕐 Best Time: ${data.time}
-💬 Message: ${data.message}`);
-      
-      // Open WhatsApp in a new tab
+    const msg = encodeURIComponent(`NEW SOLAR QUOTE REQUEST
+Name: ${data.name}
+Phone: ${data.phone}
+Email: ${data.email}
+City: ${data.city}
+Address: ${data.address}
+Service: ${data.services.join(', ')}
+Monthly Bill: Rs.${data.bill}
+System Size: ${data.size}
+Roof Type: ${data.roof}
+Best Time: ${data.time}
+Message: ${data.message}`);
+
+    const whatsappTimer = setTimeout(() => {
       window.open(`https://wa.me/918237655610?text=${msg}`, '_blank');
-      
-      // Reset after 5s
-      setTimeout(() => {
-        setIsSubmitted(false);
-        setStep(1);
-      }, 5000);
     }, 1500);
+
+    const resetTimer = setTimeout(() => {
+      setIsSubmitted(false);
+      setStep(1);
+    }, 6500);
+
+    return () => {
+      clearTimeout(whatsappTimer);
+      clearTimeout(resetTimer);
+    };
   };
 
   const trustPoints = [

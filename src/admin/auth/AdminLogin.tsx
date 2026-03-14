@@ -44,7 +44,7 @@ export const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password (admin123)"
+              placeholder="Password"
               className="w-full bg-sky-deep border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-sun transition-colors"
             />
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}

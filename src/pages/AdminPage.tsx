@@ -3,12 +3,28 @@ import { motion } from 'motion/react';
 import { Lock, LogOut, RefreshCw, AlertCircle, ArrowLeft, Search, Filter, Download, Users, Calendar, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+interface Lead {
+  timestamp?: string; Timestamp?: string;
+  name?: string; Name?: string;
+  phone?: string; Phone?: string;
+  email?: string; Email?: string;
+  city?: string; City?: string;
+  address?: string; Address?: string;
+  services?: string; Services?: string;
+  bill?: string; Bill?: string;
+  size?: string; Size?: string;
+  roof?: string; Roof?: string;
+  time?: string; Time?: string;
+  message?: string; Message?: string;
+  [key: number]: string;
+}
+
 export const AdminPage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState('');
   
@@ -16,7 +32,7 @@ export const AdminPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [serviceFilter, setServiceFilter] = useState('All');
 
-  const GOOGLE_SHEETS_URL = import.meta.env.VITE_GOOGLE_SHEETS_URL || 'https://script.google.com/macros/s/AKfycbwUmgoqjRHlLb72LP9HhTQYVwCRWy8vQapr4OPoubFCQnGZckoqQ_IeYX4nCZQ6_5hjQw/exec';
+  const GOOGLE_SHEETS_URL = import.meta.env.VITE_GOOGLE_SHEETS_URL as string | undefined;
 
   useEffect(() => {
     const auth = localStorage.getItem('adminAuth');
@@ -33,7 +49,8 @@ export const AdminPage = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'admin123') {
+    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123';
+    if (password === adminPassword) {
       setIsAuthenticated(true);
       localStorage.setItem('adminAuth', 'true');
       setError('');
@@ -56,11 +73,11 @@ export const AdminPage = () => {
     try {
       const response = await fetch(GOOGLE_SHEETS_URL);
       if (!response.ok) throw new Error('Failed to fetch data');
-      const data = await response.json();
-      // Sort by newest first assuming the first column is timestamp
-      setLeads(data.reverse());
-    } catch (err: any) {
-      setFetchError(err.message || 'Failed to load leads');
+      const data: Lead[] = await response.json();
+      setLeads([...data].reverse());
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load leads';
+      setFetchError(message);
     } finally {
       setIsLoading(false);
     }
@@ -161,7 +178,7 @@ export const AdminPage = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password (admin123)"
+                placeholder="Password"
                 className="w-full bg-sky-deep border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-sun transition-colors"
               />
               {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
@@ -314,8 +331,8 @@ export const AdminPage = () => {
                       </td>
                     </tr>
                   ) : (
-                    filteredLeads.map((lead, i) => (
-                      <tr key={i} className="border-b border-sky/5 hover:bg-sky/5 transition-colors">
+                    filteredLeads.map((lead) => (
+                      <tr key={`${lead.timestamp ?? lead.Timestamp ?? ''}-${lead.phone ?? lead.Phone ?? ''}`} className="border-b border-sky/5 hover:bg-sky/5 transition-colors">
                         <td className="p-4 text-sm text-gray whitespace-nowrap">
                           {new Date(lead.timestamp || lead.Timestamp || lead[0]).toLocaleDateString()}
                         </td>

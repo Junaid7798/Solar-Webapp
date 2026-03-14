@@ -3,14 +3,25 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Calculator as CalcIcon, Zap, Home, Building2, BarChart3, Leaf } from 'lucide-react';
 
+// Solar estimation constants (Maharashtra, 2024)
+const UNITS_PER_KW_PER_MONTH = 115;   // Average solar yield for Maharashtra
+const SQFT_PER_KW = 90;               // Shadow-free roof area required per kW
+const COST_PER_KW = 60_000;           // Approx installed cost per kW (₹)
+const CO2_KG_PER_UNIT = 0.82;        // kg CO₂ offset per kWh (India grid factor)
+const TREES_PER_TONNE_CO2 = 45;      // Equivalent trees per tonne CO₂ offset
+const MIN_SYSTEM_KW = 1;             // Minimum viable system size
+const COMMERCIAL_RATE = 11.5;        // MSEDCL LT-II average tariff (₹/unit)
+const MIN_ROOF_FOR_MIN_SYSTEM = SQFT_PER_KW * MIN_SYSTEM_KW; // 90 sq ft
+
 export const Calculator = () => {
   const { t } = useTranslation();
-  
+
   const [type, setType] = useState<'residential' | 'commercial'>('residential');
   const [bill, setBill] = useState(3000);
   const [roof, setRoof] = useState(500);
   const [phase, setPhase] = useState<'single' | 'three'>('single');
   const [isCalculated, setIsCalculated] = useState(false);
+  const [roofWarning, setRoofWarning] = useState(false);
   
   const [results, setResults] = useState({
     systemSize: 0,
@@ -27,72 +38,61 @@ export const Calculator = () => {
   });
 
   const calculateEstimate = () => {
-    // Reset state to trigger print animation again if already calculated
+    setRoofWarning(roof < MIN_ROOF_FOR_MIN_SYSTEM);
     setIsCalculated(false);
-    
+
     setTimeout(() => {
+      // MSEDCL Approximate Slab Rates (2024) — derive monthly units from bill
       let units = 0;
-      
-      // MSEDCL Approximate Slab Rates (2024)
       if (type === 'residential') {
-         if (bill <= 536) units = bill / 5.36; // 0-100 units
-         else if (bill <= 2448) units = 100 + (bill - 536) / 9.56; // 101-300 units
-         else if (bill <= 5192) units = 300 + (bill - 2448) / 13.72; // 301-500 units
-         else units = 500 + (bill - 5192) / 15.57; // >500 units
+        if (bill <= 536)       units = bill / 5.36;
+        else if (bill <= 2448) units = 100 + (bill - 536) / 9.56;
+        else if (bill <= 5192) units = 300 + (bill - 2448) / 13.72;
+        else                   units = 500 + (bill - 5192) / 15.57;
       } else {
-         units = bill / 11.5; // Commercial average LT II
+        units = bill / COMMERCIAL_RATE;
       }
-      
-      // In Maharashtra, 1kW roughly produces 115-120 units per month
-      const unitsPerKwPerMonth = 115;
-      let sysKw = units / unitsPerKwPerMonth;
-      
-      // 1 kW requires approx 90 sq ft of shadow-free roof area
-      const maxKwByRoof = roof / 90;
-      
+
+      let sysKw = units / UNITS_PER_KW_PER_MONTH;
+      const maxKwByRoof = roof / SQFT_PER_KW;
       sysKw = Math.min(sysKw, maxKwByRoof);
-      sysKw = Math.max(1, Math.round(sysKw * 10) / 10); // Min 1kW, 1 decimal
-      
-      // Base cost approx ₹60,000 per kW
-      const baseCost = sysKw * 60000;
+      sysKw = Math.max(MIN_SYSTEM_KW, Math.round(sysKw * 10) / 10);
+
+      const baseCost = sysKw * COST_PER_KW;
       let subsidy = 0;
-      
-      // PM Surya Ghar Muft Bijli Yojana Rules
+
+      // PM Surya Ghar Muft Bijli Yojana subsidy rules
       if (type === 'residential') {
-        if (sysKw <= 2) subsidy = sysKw * 30000;
-        else if (sysKw <= 3) subsidy = 60000 + ((sysKw - 2) * 18000);
-        else subsidy = 78000;
+        if (sysKw <= 2)      subsidy = sysKw * 30_000;
+        else if (sysKw <= 3) subsidy = 60_000 + (sysKw - 2) * 18_000;
+        else                 subsidy = 78_000;
       }
-      
+
       const finalCost = baseCost - subsidy;
-      
-      // Assuming 80% of the bill is offset by solar
-      const monthlySavings = bill * 0.80; 
+      const monthlySavings = bill * 0.80; // ~80% of bill offset by solar
       const annualSavings = monthlySavings * 12;
       const payback = finalCost / annualSavings;
-      
-      // Environmental Impact
-      // 1 unit (kWh) offsets approx 0.82 kg of CO2
-      const annualUnitsGenerated = sysKw * unitsPerKwPerMonth * 12;
-      const co2 = (annualUnitsGenerated * 0.82) / 1000; // in Tonnes
-      const trees = co2 * 45; // 1 tonne CO2 ~ 45 trees
+
+      const annualUnits = sysKw * UNITS_PER_KW_PER_MONTH * 12;
+      const co2 = (annualUnits * CO2_KG_PER_UNIT) / 1000; // tonnes
+      const trees = co2 * TREES_PER_TONNE_CO2;
 
       setResults({
         systemSize: sysKw,
         monthlySavings: Math.round(monthlySavings),
-        panels: Math.ceil(sysKw * 2), // Approx 500W-540W panels
-        roofNeeded: Math.ceil(sysKw * 90),
+        panels: Math.ceil(sysKw * 2), // ~500W–540W panels
+        roofNeeded: Math.ceil(sysKw * SQFT_PER_KW),
         baseCost: Math.round(baseCost),
         subsidy: Math.round(subsidy),
         finalCost: Math.round(finalCost),
         annualSavings: Math.round(annualSavings),
         payback: Math.round(payback * 10) / 10,
         co2: Math.round(co2 * 10) / 10,
-        trees: Math.round(trees)
+        trees: Math.round(trees),
       });
-      
+
       setIsCalculated(true);
-    }, 100); // Small delay to allow unmount/remount of receipt
+    }, 100);
   };
 
   return (
@@ -194,6 +194,11 @@ export const Calculator = () => {
                 <span>100 sq.ft</span>
                 <span>5K+ sq.ft</span>
               </div>
+              {roof < MIN_ROOF_FOR_MIN_SYSTEM && (
+                <p className="mt-3 text-xs text-amber-400 font-bold">
+                  ⚠ Minimum {MIN_ROOF_FOR_MIN_SYSTEM} sq.ft needed for a 1 kW system. Results will be capped.
+                </p>
+              )}
             </div>
 
             {/* Phase Toggle */}

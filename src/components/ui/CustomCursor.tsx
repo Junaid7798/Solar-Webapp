@@ -7,11 +7,8 @@ export const CustomCursor = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Check if mobile
-    if (window.innerWidth <= 768) {
-      setIsMobile(true);
-      return;
-    }
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
 
     const updateMousePosition = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -34,10 +31,12 @@ export const CustomCursor = () => {
 
     window.addEventListener('mousemove', updateMousePosition);
     window.addEventListener('mouseover', handleMouseOver);
+    window.addEventListener('resize', checkMobile);
 
     return () => {
       window.removeEventListener('mousemove', updateMousePosition);
       window.removeEventListener('mouseover', handleMouseOver);
+      window.removeEventListener('resize', checkMobile);
     };
   }, []);
 

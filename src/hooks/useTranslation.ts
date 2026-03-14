@@ -12,12 +12,9 @@ export const useTranslation = () => {
   const { language, setLanguage } = useContext(LanguageContext);
 
   const t = (section: keyof TranslationKeys, key: string): string => {
-    try {
-      // @ts-ignore
-      return translations[language][section][key] || translations['en'][section][key] || key;
-    } catch (e) {
-      return key;
-    }
+    const sectionData = (translations[language]?.[section] ?? {}) as Record<string, string>;
+    const fallback = (translations['en']?.[section] ?? {}) as Record<string, string>;
+    return sectionData[key] ?? fallback[key] ?? key;
   };
 
   return { t, language, setLanguage };

@@ -28,8 +28,10 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   const onTouchMove = (e: React.TouchEvent) => handleMove(e.touches[0].clientX);
 
   return (
-    <div 
+    <div
       ref={containerRef}
+      role="img"
+      aria-label={`Before and after comparison: ${labelBefore} vs ${labelAfter}`}
       className="relative w-full aspect-video rounded-2xl overflow-hidden cursor-col-resize select-none border border-sky/10 shadow-lg"
       onMouseMove={onMouseMove}
       onTouchMove={onTouchMove}

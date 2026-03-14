@@ -153,9 +153,11 @@ export const VisualProof = () => {
                 variants={itemAnim}
                 className="group relative aspect-[4/5] rounded-[2.5rem] overflow-hidden glass border-white/5"
               >
-                <img 
-                  src={img.url} 
-                  alt={img.title} 
+                <img
+                  src={img.url}
+                  alt={img.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   referrerPolicy="no-referrer"
                 />
