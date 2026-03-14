@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-sun: #FFB347;
+  --color-sun-light: #FFD966;
+  --color-sun-dim: rgba(255, 179, 71, 0.1);
+  --color-teal: #00C896;
+  --color-sky-deep: #0D1B2A;
+  --color-sky: #1B2A4A;
+  --color-sky-mid: #1E3354;
+  --color-gunmetal: #2C3240;
+  --color-white: #EEF2F7;
+  --color-gray: #7A8FA6;
+  --color-silver: #C0C8D4;
+  --color-light-bg: #F4F7FC;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  body {
+    @apply font-body bg-sky-deep text-silver antialiased overflow-x-hidden selection:bg-sun selection:text-sky-deep;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+  .glass-dark {
+    @apply bg-sky-deep/70 backdrop-blur-lg border border-white/10;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .text-shadow-glow {
+    text-shadow: 0 0 20px rgba(255, 179, 71, 0.4);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-sky-deep;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-sky rounded-full border-2 border-sky-deep hover:bg-sun transition-colors;
+}
+
+/* Custom Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
