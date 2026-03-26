@@ -55,6 +55,16 @@ export const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
           >
             Login
           </button>
+          
+          {import.meta.env.DEV && (
+            <button
+              type="button"
+              onClick={onLogin}
+              className="w-full mt-4 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white/80 text-xs font-bold py-2 rounded-lg transition-all border border-white/5"
+            >
+              Bypass (Dev Only)
+            </button>
+          )}
         </form>
       </motion.div>
     </div>

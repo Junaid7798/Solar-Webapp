@@ -2,6 +2,10 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import QRCode from 'qrcode';
 
+const BUSINESS_NAME = import.meta.env.VITE_BUSINESS_NAME || 'Asrar Solar';
+const BUSINESS_TAGLINE = import.meta.env.VITE_BUSINESS_TAGLINE || 'Maharashtra Solar Specialists';
+const BUSINESS_PHONE = import.meta.env.VITE_BUSINESS_PHONE || '918237655610';
+
 interface QuotationData {
   id: string;
   date: string;
@@ -48,11 +52,11 @@ export const generateQuotationPDF = async (data: QuotationData) => {
   
   doc.setFontSize(18);
   doc.setTextColor(...(sun as [number, number, number]));
-  doc.text('SolarEdge Pro', 20, 20);
+  doc.text(BUSINESS_NAME, 20, 20);
   
   doc.setFontSize(10);
   doc.setTextColor(200, 200, 200);
-  doc.text('Maharashtra Solar Specialists', 20, 28);
+  doc.text(BUSINESS_TAGLINE, 20, 28);
   
   // Info Row
   doc.setTextColor(100, 100, 100);
@@ -147,7 +151,7 @@ export const generateQuotationPDF = async (data: QuotationData) => {
   // QR Code & Footer
   const footerY = 260;
   try {
-    const qrDataUrl = await QRCode.toDataURL(`https://wa.me/918237655610?text=I%20am%20interested%20in%20Quote%20${data.id}`);
+    const qrDataUrl = await QRCode.toDataURL(`https://wa.me/${BUSINESS_PHONE}?text=I%20am%20interested%20in%20Quote%20${data.id}`);
     doc.addImage(qrDataUrl, 'PNG', pageWidth - 45, footerY - 25, 25, 25);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);

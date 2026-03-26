@@ -6,13 +6,15 @@ interface BeforeAfterSliderProps {
   after: string;
   labelBefore?: string;
   labelAfter?: string;
+  beforeClassName?: string;
 }
 
 export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   before,
   after,
   labelBefore = "Before",
-  labelAfter = "After"
+  labelAfter = "After",
+  beforeClassName = ""
 }) => {
   const [sliderPos, setSliderPos] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,7 +54,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
         <img 
           src={before} 
           alt="Before" 
-          className="absolute inset-0 w-full h-full object-cover"
+          className={`absolute inset-0 w-full h-full object-cover ${beforeClassName}`}
           referrerPolicy="no-referrer"
         />
       </div>

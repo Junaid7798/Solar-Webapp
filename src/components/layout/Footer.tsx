@@ -11,6 +11,18 @@ export const Footer = () => {
 
       {/* ── Pre-footer Glow CTA ── */}
       <div className="relative py-24 overflow-hidden">
+        {/* Background image */}
+        <div className="absolute inset-0 pointer-events-none">
+          <img
+            src="/images/tropical-sunset.jpg"
+            alt=""
+            aria-hidden="true"
+            className="w-full h-full object-cover opacity-[0.08]"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-void/90" />
+        </div>
+
         <div className="absolute inset-0 dot-pattern opacity-25 pointer-events-none" />
 
         {/* Ambient orbs */}

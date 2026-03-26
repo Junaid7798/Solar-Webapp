@@ -261,7 +261,7 @@ export const Calculator = () => {
                   initial={{ height: 0, opacity: 0, y: -50 }}
                   animate={{ height: 'auto', opacity: 1, y: 0 }}
                   transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
-                  className="bg-[#F8F9FA] text-sky-deep mx-6 md:mx-16 relative z-10 shadow-[0_30px_60px_rgba(0,0,0,0.6)]"
+                  className="bg-[#F8F9FA] text-sky-deep mx-6 md:mx-16 relative z-10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] scan-line"
                   style={{ filter: 'drop-shadow(0 20px 20px rgba(0,0,0,0.5))' }}
                 >
                   {/* Receipt Content */}

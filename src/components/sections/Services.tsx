@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'motion/react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Sun, Wrench, Zap, Battery, BarChart3, CalendarCheck, ArrowRight, Phone, MessageCircle } from 'lucide-react';
 
@@ -12,6 +12,7 @@ const SERVICES = [
     bg: 'rgba(245,158,11,0.06)',
     accent: '#F59E0B',
     span: 'md:col-span-2',
+    image: '/images/house-rooftop.jpg',
   },
   {
     id: 's2', icon: Wrench,
@@ -21,6 +22,7 @@ const SERVICES = [
     bg: 'rgba(100,116,139,0.06)',
     accent: '#94A3B8',
     span: '',
+    image: '/images/engineers-inspecting.webp',
   },
   {
     id: 's3', icon: Zap,
@@ -30,6 +32,7 @@ const SERVICES = [
     bg: 'rgba(14,165,233,0.06)',
     accent: '#0EA5E9',
     span: '',
+    image: '/images/panel-cleaning.png',
   },
   {
     id: 's4', icon: Battery,
@@ -39,6 +42,7 @@ const SERVICES = [
     bg: 'rgba(16,185,129,0.06)',
     accent: '#10B981',
     span: '',
+    image: '/images/livguard-battery.jpeg',
   },
   {
     id: 's5', icon: BarChart3,
@@ -48,6 +52,7 @@ const SERVICES = [
     bg: 'rgba(139,92,246,0.06)',
     accent: '#8B5CF6',
     span: 'md:col-span-2',
+    image: '/images/engineer-farmer.jpg',
   },
   {
     id: 's6', icon: CalendarCheck,
@@ -57,8 +62,129 @@ const SERVICES = [
     bg: 'rgba(244,63,94,0.06)',
     accent: '#F43F5E',
     span: '',
+    image: '/images/worker-installing.webp',
   },
 ];
+
+const ServiceCard = ({ s, i, t }: any) => {
+  const Icon = s.icon;
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+  const imgY = useTransform(mouseYSpring, [-0.5, 0.5], ["-10%", "10%"]);
+  const imgX = useTransform(mouseXSpring, [-0.5, 0.5], ["-10%", "10%"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      key={s.id}
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.55, delay: i * 0.08 }}
+      className={`relative z-10 block ${s.span}`}
+      style={{ perspective: 1200 }}
+    >
+      <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        className="group relative rounded-[1.75rem] overflow-hidden h-full cursor-pointer transition-colors duration-300"
+      >
+        <div className="absolute inset-0 pointer-events-none" style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: '1.75rem' }} />
+        
+        <div className="p-8 h-full flex flex-col pointer-events-none" style={{ transform: 'translateZ(40px)' }}>
+          {/* Top accent line */}
+          <div className="absolute top-0 left-8 right-8 h-px"
+            style={{ background: `linear-gradient(90deg,transparent,${s.accent},transparent)` }} />
+
+          {/* Visible Hero Image for Card */}
+          {s.image && (
+            <div className={`relative h-56 -mx-8 -mt-8 mb-8 overflow-hidden rounded-t-[1.75rem] ${s.id === 's4' ? 'bg-gradient-to-b from-[#111827] to-transparent' : ''}`}>
+              <motion.div
+                style={{ x: imgX, y: imgY, transformStyle: 'preserve-3d' }}
+                whileHover={{ scale: 1.15, translateZ: 50 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                className="w-full h-full"
+              >
+                <img
+                  src={s.image}
+                  alt={t('services', s.id)}
+                  className={`w-full h-full ${s.id === 's4' ? 'object-contain p-8 drop-shadow-2xl' : 'object-cover brightness-110 contrast-125'} transition-all duration-700`}
+                  loading="lazy"
+                />
+              </motion.div>
+              <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(to top, ${s.bg} 15%, transparent 100%)` }} />
+            </div>
+          )}
+
+          {/* Hover radial fill */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[1.75rem]"
+            style={{ background: `radial-gradient(circle at 50% 0%,${s.accent}12 0%,transparent 65%)` }} />
+
+          {/* Shine sweep on hover */}
+          <div className="absolute top-0 h-full w-[40%] skew-x-[-20deg] opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ background: `linear-gradient(90deg,transparent,${s.accent}18,transparent)`, animation: 'shine-sweep 1.2s ease forwards' }} />
+
+          {/* Icon */}
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-7 relative z-10 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3"
+            style={{ background: `${s.accent}15`, border: `1px solid ${s.accent}28`, boxShadow: `0 0 20px ${s.accent}20` }}
+          >
+            <Icon size={26} style={{ color: s.accent, filter: `drop-shadow(0 0 6px ${s.accent}90)` }} />
+          </div>
+
+          {/* Text */}
+          <h3 className="font-display font-bold text-[1.4rem] md:text-2xl text-white mb-3 relative z-10 leading-tight">
+            {t('services', s.id)}
+          </h3>
+          <p className="text-sm leading-relaxed mb-8 relative z-10 transition-colors duration-300 md:text-[0.9rem]"
+            style={{ color: '#94A3B8' }}>
+            {t('services', `${s.id}d`)}
+          </p>
+
+          <div className="mt-auto"></div>
+
+          {/* CTA */}
+          <button
+            onClick={(e) => { e.stopPropagation(); document.getElementById('get-quote')?.scrollIntoView({ behavior: 'smooth' }); }}
+            className="cursor-pointer relative z-10 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest transition-all group-hover:gap-3 pointer-events-auto"
+            style={{ color: s.accent }}
+          >
+            {t('services', 'getQuote')}
+            <ArrowRight size={13} />
+          </button>
+
+          {/* BG number */}
+          <div className="absolute bottom-5 right-7 font-mono font-black text-7xl select-none opacity-[0.04]" style={{ color: s.accent }}>
+            {String(i + 1).padStart(2, '0')}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
 
 export const Services = () => {
   const { t } = useTranslation();
@@ -67,7 +193,7 @@ export const Services = () => {
     <section id="services" className="py-28 relative overflow-hidden" style={{ background: '#07090F' }}>
 
       {/* Background */}
-      <div className="absolute inset-0 grid-pattern opacity-100" />
+      <div className="absolute inset-0 grid-pattern opacity-100 pointer-events-none" />
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="animate-orb1 absolute -top-20 right-[-5%] w-[500px] h-[500px] rounded-full blur-[130px] opacity-15"
           style={{ background: 'radial-gradient(circle,#F59E0B,transparent 70%)' }} />
@@ -97,64 +223,7 @@ export const Services = () => {
 
         {/* Bento Grid */}
         <div className="grid md:grid-cols-3 gap-5">
-          {SERVICES.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <motion.div
-                key={s.id}
-                initial={{ opacity: 0, y: 28 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.55, delay: i * 0.08 }}
-                className={`group relative rounded-[1.75rem] p-8 overflow-hidden cursor-pointer card-hover ${s.span}`}
-                style={{ background: s.bg, border: `1px solid ${s.border}` }}
-              >
-                {/* Top accent line */}
-                <div className="absolute top-0 left-8 right-8 h-px"
-                  style={{ background: `linear-gradient(90deg,transparent,${s.accent},transparent)` }} />
-
-                {/* Hover radial fill */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[1.75rem]"
-                  style={{ background: `radial-gradient(circle at 50% 0%,${s.accent}12 0%,transparent 65%)` }} />
-
-                {/* Shine sweep on hover */}
-                <div className="absolute top-0 h-full w-[40%] skew-x-[-20deg] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity"
-                  style={{ background: `linear-gradient(90deg,transparent,${s.accent}18,transparent)`, animation: 'shine-sweep 1.2s ease forwards' }} />
-
-                {/* Icon */}
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-7 relative z-10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3"
-                  style={{ background: `${s.accent}15`, border: `1px solid ${s.accent}28`, boxShadow: `0 0 20px ${s.accent}20` }}
-                >
-                  <Icon size={26} style={{ color: s.accent, filter: `drop-shadow(0 0 6px ${s.accent}90)` }} />
-                </div>
-
-                {/* Text */}
-                <h3 className="font-display font-bold text-[1.35rem] text-white mb-3 relative z-10">
-                  {t('services', s.id)}
-                </h3>
-                <p className="text-sm leading-relaxed mb-8 relative z-10 transition-colors duration-300"
-                  style={{ color: '#64748B', lineHeight: '1.7' }}>
-                  {t('services', `${s.id}d`)}
-                </p>
-
-                {/* CTA */}
-                <button
-                  onClick={() => document.getElementById('get-quote')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="cursor-pointer relative z-10 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest transition-all group-hover:gap-3"
-                  style={{ color: s.accent }}
-                >
-                  {t('services', 'getQuote')}
-                  <ArrowRight size={13} />
-                </button>
-
-                {/* BG number */}
-                <div className="absolute bottom-5 right-7 font-mono font-black text-7xl select-none pointer-events-none opacity-[0.04]" style={{ color: s.accent }}>
-                  {String(i + 1).padStart(2, '0')}
-                </div>
-              </motion.div>
-            );
-          })}
+          {SERVICES.map((s, i) => <ServiceCard key={s.id} s={s} i={i} t={t} />)}
         </div>
 
         {/* CTA Banner */}

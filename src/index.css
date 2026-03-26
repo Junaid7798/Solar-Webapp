@@ -154,6 +154,85 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .text-balance { text-wrap: balance; }
+
+  /* Premium Shimmer Border */
+  .shimmer-border {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-border::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      transparent,
+      rgba(245,158,11, 0.3),
+      transparent 30%
+    );
+    animation: rotate-shimmer 4s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Scan-line / Radar effect */
+  .scan-line {
+    position: relative;
+    overflow: hidden;
+  }
+  .scan-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(245,158,11, 0.4), transparent);
+    animation: scan-vertical 3s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* ── Admin Dark Cards ── */
+  .admin-card {
+    background: #131D35;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 1rem;
+  }
+  .admin-card-surface {
+    background: #0F1629;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 1rem;
+  }
+  .admin-input {
+    background: #0B0F1A;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #CBD5E1;
+    border-radius: 0.75rem;
+    transition: border-color 0.15s;
+  }
+  .admin-input:focus {
+    outline: none;
+    border-color: rgba(245,158,11,0.5);
+  }
+  .admin-input::placeholder { color: rgba(203,213,225,0.25); }
+
+  /* custom scrollbar for admin */
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(245,158,11,0.2); border-radius: 99px; }
+}
+
+@keyframes rotate-shimmer {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes scan-vertical {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(1000%); opacity: 0; }
 }
 
 /* ─── SCROLLBAR ──────────────────────────────────────── */
@@ -280,3 +359,43 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-up { animation: fade-up 0.7s ease forwards; }
+
+/* ── Image Reveal ── */
+@keyframes image-reveal {
+  from { filter: blur(10px); transform: scale(1.05); }
+  to   { filter: blur(0px); transform: scale(1); }
+}
+.animate-image-reveal {
+  animation: image-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Gentle Zoom (Ken Burns) ── */
+@keyframes gentle-zoom {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.animate-gentle-zoom {
+  animation: gentle-zoom 20s ease-in-out infinite;
+}
+
+/* ── Mobile Slide Up ── */
+@keyframes slide-up-mobile {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 768px) {
+  .animate-slide-up-mobile {
+    animation: slide-up-mobile 0.6s ease-out forwards;
+  }
+}
+
+/* ── Prefers Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

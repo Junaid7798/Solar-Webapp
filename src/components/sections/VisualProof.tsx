@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { BeforeAfterSlider } from '../ui/BeforeAfterSlider';
+
 import { Camera, History, Star, ArrowRight } from 'lucide-react';
 
 const container = {
@@ -20,12 +20,12 @@ export const VisualProof = () => {
   const [activeTab, setActiveTab] = useState('all');
 
   const galleryImages = [
-    { id: 1, url: 'https://picsum.photos/seed/solar1/800/600', category: 'Residential', title: 'Nashik Villa' },
-    { id: 2, url: 'https://picsum.photos/seed/solar2/800/600', category: 'Commercial', title: 'Pune Factory' },
-    { id: 3, url: 'https://picsum.photos/seed/customer1/800/600', category: 'Testimony', title: 'Happy Client' },
-    { id: 4, url: 'https://picsum.photos/seed/solar3/800/600', category: 'Residential', title: 'Mumbai Apartment' },
-    { id: 5, url: 'https://picsum.photos/seed/customer2/800/600', category: 'Testimony', title: 'Satisfied Customer' },
-    { id: 6, url: 'https://picsum.photos/seed/solar4/800/600', category: 'Commercial', title: 'Warehouse Solar' },
+    { id: 1, url: '/images/house-rooftop.jpg', category: 'Residential', title: 'Nashik Villa' },
+    { id: 2, url: '/images/engineers-inspecting.webp', category: 'Commercial', title: 'Pune Factory' },
+    { id: 3, url: '/images/happy-customer.jpeg', category: 'Testimony', title: 'Happy Client' },
+    { id: 4, url: '/images/livguard-battery.jpeg', category: 'Residential', title: 'Mumbai Apartment' },
+    { id: 5, url: '/images/engineer-farmer.jpg', category: 'Testimony', title: 'Satisfied Customer' },
+    { id: 6, url: '/images/panel-cleaning.png', category: 'Commercial', title: 'Warehouse Solar' },
   ];
 
   const tabs = ['all', 'Residential', 'Commercial', 'Testimony'];
@@ -64,16 +64,16 @@ export const VisualProof = () => {
                 <History size={24} />
               </div>
               <div>
-                <h3 className="text-2xl font-display font-bold text-white uppercase tracking-tight">The Transformation</h3>
-                <p className="text-xs text-silver/40 uppercase tracking-widest font-bold">Slide to see the solar impact</p>
+                <h3 className="text-2xl font-display font-bold text-white uppercase tracking-tight">Featured Installation</h3>
+                <p className="text-xs text-silver/40 uppercase tracking-widest font-bold">Premium Solar Solutions</p>
               </div>
             </div>
-            <div className="glass p-2 rounded-[2.5rem] overflow-hidden">
-              <BeforeAfterSlider 
-                before="https://picsum.photos/seed/before_lp/800/600?grayscale" 
-                after="https://picsum.photos/seed/after_lp/800/600" 
-                labelBefore="Empty Roof"
-                labelAfter="Solar Powered"
+            <div className="relative glass p-2 rounded-[2.5rem] overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-tr from-sun/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
+              <img 
+                src="/images/worker-installing.webp" 
+                alt="Solar Installation" 
+                className="w-full h-full object-cover rounded-[2rem] aspect-video transition-transform duration-700 group-hover:scale-105"
               />
             </div>
           </motion.div>
@@ -145,7 +145,7 @@ export const VisualProof = () => {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
           >
             {galleryImages.filter(img => activeTab === 'all' || img.category === activeTab).map((img) => (
               <motion.div 
@@ -161,17 +161,27 @@ export const VisualProof = () => {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-sky-deep via-sky-deep/20 to-transparent opacity-60 group-hover:opacity-90 transition-all duration-500 flex flex-col justify-end p-8">
-                  <span className="text-sun text-[10px] font-bold uppercase tracking-widest mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">{img.category}</span>
-                  <h4 className="text-white text-2xl font-display font-bold translate-y-4 group-hover:translate-y-0 transition-transform duration-500">{img.title}</h4>
-                  {img.category === 'Testimony' && (
-                    <div className="mt-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200">
-                      {[1,2,3,4,5].map(s => <Star key={s} size={14} className="text-sun fill-sun" />)}
-                    </div>
-                  )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#07090F] via-[#07090F]/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                
+                <div className="absolute inset-0 flex flex-col justify-end p-8">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500"
+                  >
+                    <span className="text-sun text-[10px] font-bold uppercase tracking-widest mb-2 block">{img.category}</span>
+                    <h4 className="text-white text-2xl font-display font-bold leading-tight">{img.title}</h4>
+                    
+                    {img.category === 'Testimony' && (
+                      <div className="mt-4 flex gap-1">
+                        {[1,2,3,4,5].map(s => <Star key={s} size={14} className="text-sun fill-sun" />)}
+                      </div>
+                    )}
+                  </motion.div>
                 </div>
+
                 {img.category === 'Testimony' && (
-                  <div className="absolute top-6 right-6 glass px-4 py-2 rounded-full border-sun/20 flex items-center gap-2">
+                  <div className="absolute top-6 right-6 glass px-4 py-2 rounded-full border border-sun/20 flex items-center gap-2 z-20">
                     <div className="w-2 h-2 rounded-full bg-sun animate-pulse" />
                     <span className="text-[10px] font-bold text-sun uppercase tracking-widest">Verified Testimony</span>
                   </div>

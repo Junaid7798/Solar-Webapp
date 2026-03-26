@@ -18,8 +18,7 @@ export const AdminApp = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Support both the old localStorage and the new sessionStorage from the brief
-    const auth = sessionStorage.getItem('admin_auth') || localStorage.getItem('adminAuth');
+    const auth = sessionStorage.getItem('admin_auth');
     if (auth === 'true') {
       setIsAuthenticated(true);
     }
@@ -34,7 +33,6 @@ export const AdminApp = () => {
   const handleLogout = () => {
     setIsAuthenticated(false);
     sessionStorage.removeItem('admin_auth');
-    localStorage.removeItem('adminAuth');
   };
 
   if (isLoading) return null;

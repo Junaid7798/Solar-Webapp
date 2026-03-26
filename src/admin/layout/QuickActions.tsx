@@ -8,10 +8,10 @@ export const QuickActions = () => {
   const navigate = useNavigate();
 
   const actions = [
-    { icon: <UserPlus size={20} />, label: 'New Lead', path: '/admin/leads', color: 'bg-blue-500' },
-    { icon: <Briefcase size={20} />, label: 'New Project', path: '/admin/projects', color: 'bg-sun' },
-    { icon: <FileText size={20} />, label: 'New Quote', path: '/admin/quotations', color: 'bg-teal' },
-    { icon: <Package size={20} />, label: 'Add Stock', path: '/admin/inventory', color: 'bg-sky-deep' },
+    { icon: <UserPlus size={20} />, label: 'New Lead', path: '/admin/leads', color: 'bg-sky text-depth' },
+    { icon: <Briefcase size={20} />, label: 'New Project', path: '/admin/projects', color: 'bg-amber text-depth' },
+    { icon: <FileText size={20} />, label: 'New Quote', path: '/admin/quotations', color: 'bg-emerald text-depth' },
+    { icon: <Package size={20} />, label: 'Add Stock', path: '/admin/inventory', color: 'bg-surface text-white border border-white/10' },
   ];
 
   const handleAction = (path: string) => {
@@ -33,12 +33,12 @@ export const QuickActions = () => {
                 transition={{ delay: index * 0.05 }}
                 className="flex items-center gap-3"
               >
-                <span className="bg-white px-3 py-1 rounded-lg text-xs font-bold text-sky-deep shadow-lg border border-sky/5">
+                <span className="bg-card px-3 py-1 rounded-lg text-xs font-bold text-white/70 shadow-lg border border-white/10">
                   {action.label}
                 </span>
                 <button
                   onClick={() => handleAction(action.path)}
-                  className={`${action.color} text-white p-3 rounded-full shadow-lg hover:scale-110 transition-transform`}
+                  className={`${action.color} p-3 rounded-full shadow-lg hover:scale-110 transition-transform`}
                 >
                   {action.icon}
                 </button>
@@ -51,8 +51,8 @@ export const QuickActions = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`${
-          isOpen ? 'bg-red-500 rotate-45' : 'bg-sun rotate-0'
-        } text-sky-deep p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-110 active:scale-95`}
+          isOpen ? 'bg-red-500 text-white rotate-45' : 'bg-amber text-depth rotate-0'
+        } p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-110 active:scale-95`}
       >
         <Plus size={24} className="transition-transform" />
       </button>
@@ -65,7 +65,7 @@ export const QuickActions = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-sky-deep/40 backdrop-blur-md -z-10"
+            className="fixed inset-0 bg-void/60 backdrop-blur-md -z-10"
           />
         )}
       </AnimatePresence>

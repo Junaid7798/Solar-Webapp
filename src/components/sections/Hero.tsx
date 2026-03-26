@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useMemo } from 'react';
-import { motion, useMotionValue, useMotionTemplate, animate } from 'motion/react';
+import React, { useEffect } from 'react';
+import { motion, useMotionValue, useMotionTemplate, animate, useSpring, useTransform } from 'motion/react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ArrowRight, ChevronDown, ShieldCheck, Zap, Users, TrendingUp, Sun, Leaf, Battery } from 'lucide-react';
+import { MagneticButton } from '../ui/MagneticButton';
 
 /* Cycling aurora colors for the hero gradient */
 const AURORA_COLORS = ['#F59E0B', '#0EA5E9', '#10B981', '#F59E0B'];
@@ -21,6 +22,32 @@ export const Hero = () => {
   const color = useMotionValue(AURORA_COLORS[0]);
   const backgroundImage = useMotionTemplate`radial-gradient(130% 130% at 60% 0%, #07090F 45%, ${color}28)`;
 
+  // --- Parallax Setup ---
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    const x = (clientX / window.innerWidth - 0.5) * 2;
+    const y = (clientY / window.innerHeight - 0.5) * 2;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const springConfig = { damping: 25, stiffness: 100, mass: 0.5 };
+  const smoothX = useSpring(mouseX, springConfig);
+  const smoothY = useSpring(mouseY, springConfig);
+
+  const orb1X = useTransform(smoothX, [-1, 1], [-40, 40]);
+  const orb1Y = useTransform(smoothY, [-1, 1], [-40, 40]);
+  const orb2X = useTransform(smoothX, [-1, 1], [40, -40]);
+  const orb2Y = useTransform(smoothY, [-1, 1], [40, -40]);
+  const orb3X = useTransform(smoothX, [-1, 1], [-20, 20]);
+  const orb3Y = useTransform(smoothY, [-1, 1], [-20, 20]);
+  const bgX = useTransform(smoothX, [-1, 1], [15, -15]);
+  const bgY = useTransform(smoothY, [-1, 1], [15, -15]);
+
+
   useEffect(() => {
     const ctrl = animate(color, AURORA_COLORS, {
       ease: 'easeInOut', duration: 12, repeat: Infinity, repeatType: 'mirror',
@@ -34,15 +61,16 @@ export const Hero = () => {
   return (
     <motion.section
       id="home"
+      onMouseMove={handleMouseMove}
       style={{ backgroundImage }}
-      className="relative min-h-screen flex items-center pt-28 pb-32 overflow-hidden"
+      className="relative min-h-[85vh] flex flex-col-reverse lg:flex-row overflow-hidden bg-[#07090F] pt-32 lg:pt-40"
     >
       {/* ── Star Field ── */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         {STARS.map(s => (
           <div
             key={s.id}
-            className="absolute rounded-full bg-white"
+            className={`absolute rounded-full bg-white ${s.id % 2 === 0 ? 'max-lg:hidden' : ''}`}
             style={{
               left: `${s.x}%`, top: `${s.y}%`,
               width: `${s.size}px`, height: `${s.size}px`,
@@ -52,237 +80,133 @@ export const Hero = () => {
         ))}
       </div>
 
-      {/* ── Scan Line ── */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <div
-          className="animate-scan absolute left-0 right-0 h-[1px]"
-          style={{ background: 'linear-gradient(90deg,transparent,rgba(245,158,11,0.5),rgba(14,165,233,0.4),transparent)' }}
-        />
-      </div>
-
-      {/* ── Dot Grid ── */}
-      <div className="absolute inset-0 z-0 dot-pattern opacity-30" />
-
       {/* ── Ambient Orbs ── */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Primary amber orb — top-right (the sun) */}
-        <div
-          className="animate-orb1 absolute -top-32 right-[-8%] w-[650px] h-[650px] rounded-full blur-[130px] opacity-25"
-          style={{ background: 'radial-gradient(circle, #F59E0B 0%, #FCD34D 30%, transparent 70%)' }}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-visible">
+        <motion.div
+           style={{ x: orb1X, y: orb1Y, background: 'radial-gradient(circle, #F59E0B 0%, #FCD34D 30%, transparent 70%)' }}
+          className="animate-orb1 absolute top-[10%] left-[5%] w-[450px] h-[450px] rounded-full blur-[130px] opacity-15"
         />
-        {/* Sky blue orb — bottom-left */}
-        <div
-          className="animate-orb2 absolute bottom-[-15%] left-[-5%] w-[500px] h-[500px] rounded-full blur-[110px] opacity-20"
-          style={{ background: 'radial-gradient(circle, #0EA5E9 0%, #38BDF8 30%, transparent 70%)' }}
-        />
-        {/* Emerald orb — mid */}
-        <div
-          className="animate-orb3 absolute top-[40%] right-[25%] w-[300px] h-[300px] rounded-full blur-[90px] opacity-12"
-          style={{ background: 'radial-gradient(circle, #10B981 0%, transparent 70%)' }}
+        <motion.div
+           style={{ x: orb2X, y: orb2Y, background: 'radial-gradient(circle, #0EA5E9 0%, #38BDF8 30%, transparent 70%)' }}
+          className="animate-orb2 absolute bottom-[10%] left-[10%] w-[400px] h-[400px] rounded-full blur-[110px] opacity-10"
         />
       </div>
 
-      {/* ── Main Content ── */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10 w-full">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-
-          {/* LEFT */}
-          <div>
-            {/* Live badge */}
-            <motion.div
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full mb-10 glass-amber"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping-slow absolute inline-flex h-full w-full rounded-full bg-amber opacity-75" style={{ background: '#F59E0B' }} />
-                <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: '#F59E0B' }} />
-              </span>
-              <span className="text-amber text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: '#F59E0B' }}>
-                {t('hero', 'tag')}
-              </span>
-            </motion.div>
-
-            {/* Headline */}
-            <motion.h1
-              initial={{ opacity: 0, y: 32 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.75, delay: 0.1 }}
-              className="font-display font-extrabold leading-[0.88] tracking-tighter mb-8"
-              style={{ fontSize: 'clamp(3.2rem, 7.5vw, 6.2rem)' }}
-            >
-              <span className="block text-white">{t('hero', 'title1')}</span>
-              <span className="block text-white">{t('hero', 'title2')}</span>
-              <span className="block text-gradient-amber">{t('hero', 'title3')}</span>
-            </motion.h1>
-
-            {/* Sub + tagline */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.25 }}
-              className="text-lg leading-relaxed mb-3 max-w-lg font-light"
-              style={{ color: '#94A3B8' }}
-            >
-              {t('hero', 'subtext')}
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.38 }}
-              className="font-display text-xl italic font-medium tracking-wide mb-10"
-              style={{ color: 'rgba(245,158,11,0.75)' }}
-            >
-              {t('hero', 'tagline')}
-            </motion.p>
-
-            {/* CTAs */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.42 }}
-              className="flex flex-wrap gap-4 mb-14"
-            >
-              <motion.button
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={scrollToQuote}
-                className="cursor-pointer relative group overflow-hidden px-8 py-4 rounded-2xl font-bold text-sm flex items-center gap-2.5"
-                style={{ background: 'linear-gradient(135deg, #F59E0B, #FCD34D)', color: '#07090F', boxShadow: '0 0 30px rgba(245,158,11,0.35)' }}
-              >
-                {/* Shine sweep */}
-                <span
-                  className="absolute top-0 h-full w-[45%] skew-x-[-20deg] bg-white/25 pointer-events-none"
-                  style={{ animation: 'shine-sweep 2.5s ease-in-out infinite', left: '-150%' }}
-                />
-                <span className="relative z-10">{t('hero', 'cta1')}</span>
-                <ArrowRight size={17} className="relative z-10 group-hover:translate-x-1 transition-transform" />
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={scrollToServices}
-                className="cursor-pointer px-8 py-4 glass rounded-2xl font-bold text-white text-sm flex items-center gap-2.5 hover:border-amber/30 transition-all border border-white/10"
-                style={{ color: '#CBD5E1' }}
-              >
-                {t('hero', 'cta2')}
-                <ChevronDown size={15} className="opacity-50" />
-              </motion.button>
-            </motion.div>
-
-            {/* Trust badges */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="flex flex-wrap gap-6 items-center border-t pt-8"
-              style={{ borderColor: 'rgba(255,255,255,0.05)' }}
-            >
-              {[
-                { icon: ShieldCheck, label: 'Certified Partner', color: '#10B981' },
-                { icon: Users,       label: '500+ Families',    color: '#F59E0B' },
-                { icon: Zap,         label: '24/7 Support',     color: '#0EA5E9' },
-              ].map(({ icon: Icon, label, color }, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <Icon size={15} style={{ color }} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#64748B' }}>{label}</span>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* RIGHT — Solar Dashboard */}
+      {/* ── [LEFT SIDE] CONTENT ── */}
+      <div className="relative z-10 w-full lg:w-[48%] flex items-center justify-end h-auto lg:min-h-[85vh]">
+        <div className="w-full max-w-[660px] px-6 md:px-12 py-20 lg:py-0 flex flex-col items-center text-center lg:items-start lg:text-left">
+          
+          {/* Live badge */}
           <motion.div
-            initial={{ opacity: 0, x: 48 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, delay: 0.3, type: 'spring', stiffness: 70 }}
-            className="relative hidden lg:flex justify-center items-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full mb-8 lg:mb-10 glass border border-white/5 shadow-[0_0_30px_rgba(245,158,11,0.1)]"
           >
-            {/* Orbiting rings */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[460px] h-[460px] rounded-full border border-amber/8 animate-spin-slow" style={{ borderColor: 'rgba(245,158,11,0.08)' }} />
-              <div className="absolute w-[370px] h-[370px] rounded-full border border-sky/8 animate-spin-slow-rev" style={{ borderColor: 'rgba(14,165,233,0.08)' }} />
-              <div className="absolute w-[280px] h-[280px] rounded-full border border-white/4" />
-            </div>
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: '#F59E0B' }} />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full" style={{ background: '#F59E0B' }} />
+            </span>
+            <span className="text-[12px] font-bold uppercase tracking-[0.25em]" style={{ color: '#F59E0B' }}>
+              {t('hero', 'tag')}
+            </span>
+          </motion.div>
 
-            {/* Sun orb centre */}
-            <div className="absolute w-20 h-20 rounded-full animate-float pointer-events-none z-0"
-              style={{ background: 'radial-gradient(circle, rgba(245,158,11,0.35) 0%, transparent 70%)', filter: 'blur(16px)' }} />
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.75, delay: 0.1 }}
+            className="font-display font-extrabold leading-[1.05] tracking-tight mb-6 lg:mb-8"
+            style={{ fontSize: 'clamp(2.8rem, 6vw, 4.8rem)' }}
+          >
+            <span className="block text-white drop-shadow-lg">{t('hero', 'title1')}</span>
+            <span className="block text-white drop-shadow-lg">{t('hero', 'title2')}</span>
+            <span className="block text-gradient-solar animate-gradient mt-2 lg:mt-3 drop-shadow-[0_0_20px_rgba(245,158,11,0.3)]">{t('hero', 'title3')}</span>
+          </motion.h1>
 
-            {/* Main card */}
-            <div className="relative z-10 w-[360px] flex flex-col gap-4">
+          {/* Sub + tagline */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.25 }}
+            className="text-lg md:text-xl leading-relaxed mb-4 max-w-xl font-light"
+            style={{ color: '#94A3B8' }}
+          >
+            {t('hero', 'subtext')}
+          </motion.p>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.38 }}
+            className="font-display text-xl md:text-2xl italic font-medium tracking-wide mb-10 lg:mb-12"
+            style={{ color: 'rgba(245,158,11,0.9)' }}
+          >
+            {t('hero', 'tagline')}
+          </motion.p>
 
-              {/* Energy output */}
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-                className="glass rounded-[1.75rem] p-6 border"
-                style={{ borderColor: 'rgba(245,158,11,0.15)', boxShadow: '0 0 40px rgba(245,158,11,0.1)' }}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#64748B' }}>Live Energy Output</p>
-                    <p className="font-display font-extrabold text-3xl text-white">
-                      8.4 <span className="text-xl" style={{ color: '#F59E0B' }}>kWh</span>
-                    </p>
-                  </div>
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                    style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)' }}>
-                    <Sun size={26} style={{ color: '#F59E0B' }} />
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 mb-4">
-                  <TrendingUp size={13} style={{ color: '#10B981' }} />
-                  <span className="text-xs font-bold" style={{ color: '#10B981' }}>+14% vs yesterday</span>
-                </div>
-                {/* Mini bar chart */}
-                <div className="flex items-end gap-1.5 h-10">
-                  {[38, 60, 48, 75, 68, 88, 82].map((h, i) => (
-                    <div key={i} className="flex-1 rounded-sm transition-all"
-                      style={{
-                        height: `${h}%`,
-                        background: i === 6
-                          ? 'linear-gradient(to top, #F59E0B, #FCD34D)'
-                          : 'rgba(245,158,11,0.18)',
-                      }} />
-                  ))}
-                </div>
-              </motion.div>
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.42 }}
+            className="flex flex-col sm:flex-row items-center gap-5 w-full sm:w-auto mb-12 lg:mb-16"
+          >
+            <MagneticButton
+              onClick={scrollToQuote}
+              className="group w-full sm:w-auto overflow-hidden px-8 lg:px-10 py-4 rounded-full font-bold flex items-center justify-center gap-3 text-black transition-transform hover:scale-105"
+              style={{ background: 'linear-gradient(135deg, #F59E0B, #FCD34D)', boxShadow: '0 0 30px rgba(245,158,11,0.35)' }}
+            >
+              <span className="relative z-10 text-[16px] tracking-wide">{t('hero', 'cta1')}</span>
+              <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1.5 transition-transform duration-300" />
+            </MagneticButton>
 
-              {/* Two bottom cards */}
-              <div className="grid grid-cols-2 gap-4">
-                <motion.div
-                  animate={{ y: [0, 6, 0] }}
-                  transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-                  className="glass rounded-[1.25rem] p-5 border"
-                  style={{ borderColor: 'rgba(16,185,129,0.18)', boxShadow: '0 0 20px rgba(16,185,129,0.08)' }}
-                >
-                  <Leaf size={20} className="mb-3" style={{ color: '#10B981' }} />
-                  <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: '#64748B' }}>CO₂ Saved</p>
-                  <p className="font-display font-bold text-xl text-white">12.4 <span className="text-sm" style={{ color: '#10B981' }}>Tons</span></p>
-                </motion.div>
+            <MagneticButton
+              onClick={scrollToServices}
+              className="w-full sm:w-auto px-8 lg:px-10 py-4 glass rounded-full font-bold text-white flex items-center justify-center gap-3 hover:border-amber/50 transition-all border border-white/10 hover:bg-white/10"
+              style={{ color: '#F1F5F9' }}
+            >
+              <span className="text-[16px] tracking-wide">{t('hero', 'cta2')}</span>
+              <ChevronDown size={18} className="opacity-70 group-hover:translate-y-1 transition-transform duration-300" />
+            </MagneticButton>
+          </motion.div>
 
-                <motion.div
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-                  className="glass-amber rounded-[1.25rem] p-5"
-                >
-                  <Battery size={20} className="mb-3" style={{ color: '#0EA5E9' }} />
-                  <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: '#64748B' }}>Annual Saving</p>
-                  <p className="font-display font-bold text-xl text-white">₹45K</p>
-                </motion.div>
+          {/* Trust badges */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="flex flex-wrap justify-center lg:justify-start gap-4 md:gap-6"
+          >
+            {[
+              { icon: Users,       label: '500+ Families',     color: '#F59E0B' },
+            ].map(({ icon: Icon, label, color }, i) => (
+              <div key={i} className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/5">
+                <Icon size={14} style={{ color }} />
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#E2E8F0' }}>{label}</span>
               </div>
-            </div>
-
-            {/* Decorative blurs */}
-            <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-[80px] pointer-events-none opacity-30"
-              style={{ background: '#F59E0B' }} />
-            <div className="absolute -bottom-12 -left-12 w-36 h-36 rounded-full blur-[70px] pointer-events-none opacity-20"
-              style={{ background: '#0EA5E9' }} />
+            ))}
           </motion.div>
         </div>
+      </div>
+
+      {/* ── [RIGHT SIDE] IMAGE ── */}
+      <div className="relative w-full lg:w-[52%] h-[450px] lg:min-h-[85vh] overflow-hidden">
+        <motion.div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{ y: bgY }}
+        >
+          <img 
+            src="/images/hero-1.png" 
+            alt="Happy family with rooftop solar panels"
+            className="w-full h-full object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-1000"
+          />
+          {/* Subtle Masking Gradient for Split Edge */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#07090F] via-transparent to-transparent hidden lg:block" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#07090F] via-transparent to-transparent lg:hidden" />
+        </motion.div>
+
+        {/* Floating Stat Widgets removed per user request */}
       </div>
 
       {/* ── Scroll indicator ── */}
@@ -290,28 +214,10 @@ export const Hero = () => {
         animate={{ y: [0, 10, 0] }}
         transition={{ duration: 2.5, repeat: Infinity }}
         onClick={scrollToServices}
-        className="cursor-pointer absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5"
+        className="cursor-pointer absolute bottom-8 left-[24%] -translate-x-1/2 z-30 hidden lg:flex flex-col items-center gap-2"
       >
-        <div className="w-px h-14 bg-gradient-to-b from-amber-400 to-transparent" style={{ background: 'linear-gradient(to bottom, #F59E0B, transparent)' }} />
-        <ChevronDown size={15} style={{ color: 'rgba(245,158,11,0.5)' }} />
+        <ChevronDown size={24} style={{ color: 'rgba(255,255,255,0.4)' }} className="hover:text-white transition-colors" />
       </motion.div>
-
-      {/* ── Marquee Strip ── */}
-      <div className="absolute bottom-0 left-0 w-full z-20 overflow-hidden py-3"
-        style={{ background: 'linear-gradient(90deg, #F59E0B, #FCD34D, #0EA5E9, #F59E0B)', backgroundSize: '300% auto', animation: 'gradient-shift 8s ease infinite' }}>
-        <div className="flex animate-marquee whitespace-nowrap">
-          {[...Array(2)].map((_, o) => (
-            <div key={o} className="flex items-center shrink-0">
-              {['Solar Installation', 'Battery Storage', 'Net Metering', 'EV Charging', 'Smart Monitoring', 'AMC Service', 'PM Surya Ghar 2024'].map((item, i) => (
-                <div key={i} className="flex items-center gap-2 px-8">
-                  <Sun size={11} className="opacity-60 shrink-0" style={{ color: '#07090F' }} />
-                  <span className="text-[10px] font-extrabold uppercase tracking-[0.22em]" style={{ color: '#07090F' }}>{item}</span>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
     </motion.section>
   );
 };

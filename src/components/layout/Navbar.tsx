@@ -5,12 +5,18 @@ import { Menu, X, Phone, Mail, MessageCircle, Sun, Zap } from 'lucide-react';
 
 export const Navbar = () => {
   const { t, language, setLanguage } = useTranslation();
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [isScrolled, setIsScrolled]         = useState(false);
   const [isMobileMenuOpen, setMobileMenu]   = useState(false);
   const [activeSection, setActiveSection]   = useState('home');
 
   useEffect(() => {
     const onScroll = () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      setScrollProgress(scrolled);
+      
       setIsScrolled(window.scrollY > 60);
       const ids = ['home', 'about', 'services', 'gallery', 'calculator', 'get-quote'];
       for (const id of [...ids].reverse()) {
@@ -41,21 +47,25 @@ export const Navbar = () => {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 flex justify-center"
+        className="fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none"
         style={{ paddingTop: isScrolled ? '10px' : '18px', transition: 'padding 0.4s ease' }}
       >
+        {/* Scroll Progress Bar */}
+        <div className="absolute top-0 left-0 h-[3px] bg-gradient-to-r from-sun via-amber-light to-sun-light z-50 transition-all duration-150"
+             style={{ width: `${scrollProgress}%`, boxShadow: '0 0 10px rgba(245,158,11,0.5)' }} />
+
         <div
-          className="flex items-center gap-6 px-5 py-3 rounded-2xl transition-all duration-500"
+          className="flex items-center gap-6 px-5 py-3 rounded-2xl transition-all duration-500 pointer-events-auto"
           style={{
-            background: isScrolled ? 'rgba(7,9,15,0.92)' : 'rgba(7,9,15,0.35)',
+            background: isScrolled ? 'rgba(7,9,15,0.98)' : 'rgba(7,9,15,0.35)',
             backdropFilter: 'blur(28px)',
             border: isScrolled
-              ? '1px solid rgba(245,158,11,0.14)'
+              ? '1px solid rgba(245,158,11,0.18)'
               : '1px solid rgba(255,255,255,0.06)',
             boxShadow: isScrolled
-              ? '0 8px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,158,11,0.06) inset'
+              ? '0 8px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(245,158,11,0.1) inset'
               : 'none',
-            maxWidth: '900px',
+            maxWidth: '1120px',
             width: 'calc(100vw - 40px)',
           }}
         >

@@ -1,28 +1,55 @@
 import React from 'react';
-import { LogOut, Menu, Bell } from 'lucide-react';
+import { LogOut, Bell, Sun } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+
+const routeLabels: Record<string, string> = {
+  '/admin/dashboard':  'Dashboard',
+  '/admin/leads':      'Leads',
+  '/admin/quotations': 'Quotations',
+  '/admin/projects':   'Projects',
+  '/admin/inventory':  'Inventory',
+  '/admin/profit':     'Financial Analytics',
+  '/admin/amc':        'AMC Tracker',
+  '/admin/reminders':  'Reminders',
+  '/admin/gallery':    'Gallery',
+  '/admin/templates':  'WhatsApp Templates',
+  '/admin/content':    'Content',
+};
 
 export const TopBar = ({ onLogout }: { onLogout: () => void }) => {
+  const location = useLocation();
+  const pageTitle = routeLabels[location.pathname] ?? 'Admin';
+
   return (
-    <header className="bg-white h-16 md:h-20 border-b border-sky/5 flex items-center justify-between px-4 md:px-8 shrink-0 shadow-sm z-10">
+    <header className="bg-[#0B0F1A] h-14 border-b border-white/5 flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
+      {/* Page title */}
       <div className="flex items-center gap-3">
-        <div className="md:hidden w-8 h-8 rounded-lg bg-sun flex items-center justify-center">
-          <span className="text-sky-deep font-bold text-sm">S</span>
+        <div className="md:hidden w-7 h-7 rounded-lg bg-amber flex items-center justify-center">
+          <Sun size={14} className="text-[#07090F]" fill="currentColor" />
         </div>
-        <h2 className="font-display font-bold text-xl md:text-2xl text-sky-deep">
-          SolarEdge <span className="text-sun font-normal">Pro</span>
-        </h2>
+        <h1 className="font-display font-bold text-base md:text-lg text-white/90 tracking-tight">
+          {pageTitle}
+        </h1>
       </div>
-      <div className="flex items-center gap-3 md:gap-6">
-        <button className="relative text-gray-400 hover:text-sky-deep transition-colors p-2">
-          <Bell size={18} />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-        </button>
-        <div className="hidden sm:block w-px h-6 bg-gray-200"></div>
-        <button 
-          onClick={onLogout}
-          className="flex items-center gap-2 text-gray-400 hover:text-red-500 transition-colors text-[10px] md:text-sm font-bold uppercase tracking-wider"
+
+      {/* Actions */}
+      <div className="flex items-center gap-1 md:gap-2">
+        <button
+          className="relative w-9 h-9 flex items-center justify-center rounded-xl text-white/30 hover:text-white hover:bg-white/5 transition-all cursor-pointer active:scale-95"
+          title="Notifications"
+          aria-label="Notifications"
         >
-          <LogOut size={16} /> <span className="hidden sm:inline">Logout</span>
+          <Bell size={16} />
+          <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-amber rounded-full" />
+        </button>
+        <div className="w-px h-5 bg-white/10 mx-1" />
+        <button
+          onClick={onLogout}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-white/30 hover:text-red-400 hover:bg-red-500/5 transition-all cursor-pointer active:scale-95 text-xs font-bold uppercase tracking-wider"
+          title="Logout"
+        >
+          <LogOut size={14} />
+          <span className="hidden sm:inline">Logout</span>
         </button>
       </div>
     </header>

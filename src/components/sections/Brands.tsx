@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion, useMotionValue, useMotionTemplate } from 'motion/react';
 import { useTranslation } from '../../hooks/useTranslation';
 
 export const Brands = () => {
@@ -14,17 +14,41 @@ export const Brands = () => {
     { name: "Adani Solar", logo: "ADANI" },
   ];
 
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = ({ currentTarget, clientX, clientY }: React.MouseEvent) => {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  };
+
   return (
     <section id="brands" className="py-20 bg-sky-deep border-y border-white/5 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         
         {/* Tier 1 - Luminous */}
         <motion.div 
+          onMouseMove={handleMouseMove}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
-          className="relative bg-gradient-to-br from-sky-mid to-sky-deep border border-sun/30 rounded-3xl p-8 md:p-12 shadow-[0_0_50px_rgba(255,179,71,0.15)] overflow-hidden group"
+          className="relative bg-void border border-white/10 rounded-3xl p-8 md:p-12 shadow-[0_0_50px_rgba(255,179,71,0.05)] overflow-hidden group cursor-pointer"
         >
+          {/* Spotlight Hover */}
+          <motion.div
+            className="pointer-events-none absolute -inset-px rounded-3xl opacity-0 transition duration-500 group-hover:opacity-100"
+            style={{
+              background: useMotionTemplate`
+                radial-gradient(
+                  800px circle at ${mouseX}px ${mouseY}px,
+                  rgba(255,179,71,0.1),
+                  transparent 80%
+                )
+              `,
+            }}
+          />
+
           {/* Gold Sweep Animation */}
           <motion.div 
             animate={{ x: ['-100%', '200%'] }}
@@ -55,12 +79,12 @@ export const Brands = () => {
                 </li>
               </ul>
             </div>
-            
-            <div className="w-full md:w-1/3 aspect-video bg-white rounded-2xl flex items-center justify-center p-8 shadow-inner relative overflow-hidden">
+            <div className="w-full md:w-1/3 aspect-video bg-white/95 rounded-2xl flex items-center justify-center p-6 relative overflow-hidden ring-4 ring-white/10 shadow-[0_0_40px_rgba(255,255,255,0.05)] group hover:shadow-[0_0_60px_rgba(245,158,11,0.2)] transition-all duration-500">
                <img 
-                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Luminous_Power_Technologies_logo.svg/1200px-Luminous_Power_Technologies_logo.svg.png" 
-                 alt="Luminous Solar" 
-                 className="w-full h-full object-contain"
+                 src="/images/luminous-ecowatt.webp" 
+                 alt="Luminous EcoWatt Inverter & Battery Combo" 
+                 className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                 style={{ mixBlendMode: 'multiply' }}
                  referrerPolicy="no-referrer"
                />
             </div>
@@ -86,9 +110,11 @@ export const Brands = () => {
               {[...partnerBrands, ...partnerBrands, ...partnerBrands].map((brand, i) => (
                 <div 
                   key={i} 
-                  className="w-40 h-20 bg-sky-mid/50 border border-white/5 rounded-xl flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-300 hover:bg-white/5 hover:border-white/20 cursor-pointer"
+                  className="w-44 h-24 glass border border-white/5 rounded-2xl flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-500 hover:bg-white/10 hover:border-white/20 cursor-pointer relative overflow-hidden group transform hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(255,179,71,0.15)]"
                 >
-                  <span className="font-display font-bold text-xl text-white/50 hover:text-white transition-colors">{brand.logo}</span>
+                  {/* Subtle shine inside logo box */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
+                  <span className="font-display font-bold text-2xl text-white/40 group-hover:text-white transition-colors duration-500 relative z-10">{brand.logo}</span>
                 </div>
               ))}
             </motion.div>
