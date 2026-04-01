@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, CheckCircle2, DollarSign, Plus, Trash2, Save, FileText } from 'lucide-react';
 import { usePersistedData } from '../../hooks/usePersistedData';
+import type { Project } from '../../../types/admin';
 
 const stages = [
   'Site Survey',
@@ -21,7 +22,12 @@ interface Expense {
   date: string;
 }
 
-export const ProjectDrawer = ({ isOpen, onClose, project, onSave }: any) => {
+export const ProjectDrawer = ({ isOpen, onClose, project, onSave }: {
+  isOpen: boolean;
+  onClose: () => void;
+  project: Project | null;
+  onSave: (project: Project) => void;
+}) => {
   const [activeTab, setActiveTab] = useState('progress');
 
   // Per-project expenses stored by project id
@@ -303,10 +309,16 @@ export const ProjectDrawer = ({ isOpen, onClose, project, onSave }: any) => {
                       <button className="text-xs font-bold text-amber hover:text-amber-light transition-colors">Upload New</button>
                     </h4>
                     <div className="grid grid-cols-3 gap-3">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <div key={i} className="aspect-square rounded-xl overflow-hidden border border-white/5 bg-depth group relative">
+                      {[
+                        '/images/worker-installing.webp',
+                        '/images/engineers-inspecting.webp',
+                        '/images/house-rooftop.jpg',
+                        '/images/happy-customer.jpeg',
+                        '/images/hero-1.png',
+                      ].map((src) => (
+                        <div key={src} className="aspect-square rounded-xl overflow-hidden border border-white/5 bg-depth group relative">
                           <img
-                            src={`https://picsum.photos/seed/solar-site-${i}/400/400`}
+                            src={src}
                             alt="Site"
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />
@@ -348,7 +360,7 @@ export const ProjectDrawer = ({ isOpen, onClose, project, onSave }: any) => {
   );
 };
 
-const DocCard = ({ title, status, isWarning }: any) => (
+const DocCard = ({ title, status, isWarning }: { title: string; status: string; isWarning?: boolean }) => (
   <div className={`p-4 rounded-2xl border flex flex-col justify-between h-32 transition-all cursor-pointer hover:border-white/20 ${
     isWarning ? 'bg-amber-dim border-amber/20' : 'bg-depth border-white/5'
   }`}>

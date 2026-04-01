@@ -66,7 +66,20 @@ const SERVICES = [
   },
 ];
 
-const ServiceCard = ({ s, i, t }: any) => {
+interface ServiceData {
+  id: string;
+  icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+  gradient: string;
+  glow: string;
+  border: string;
+  bg: string;
+  accent: string;
+  span: string;
+  image: string;
+}
+
+const ServiceCard = (_props: { key?: string; s: ServiceData; i: number; t: ReturnType<typeof useTranslation>['t'] }) => {
+  const { s, i, t } = _props;
   const Icon = s.icon;
   const x = useMotionValue(0);
   const y = useMotionValue(0);

@@ -17,11 +17,11 @@ const FEATURES = [
   { id: 'w4', icon: HandCoins,    color: '#8B5CF6', glow: 'rgba(139,92,246,0.15)' },
 ];
 
-const CERTS = [
+const BASE_CERTS = [
   'MNRE Approved','MSEDCL Empanelled','ISO 9001:2015',
-  'MEDA Registered','PM Surya Ghar 2024','MNRE Approved',
-  'MSEDCL Empanelled','ISO 9001:2015','MEDA Registered','PM Surya Ghar 2024',
+  'MEDA Registered','PM Surya Ghar 2024',
 ];
+const CERTS = [...BASE_CERTS, ...BASE_CERTS];
 
 export const About = () => {
   const { t } = useTranslation();
@@ -129,6 +129,8 @@ export const About = () => {
             src="/images/family-solar.jpg"
             alt="Family Solar Innovation"
             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+            loading="lazy"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-void via-transparent to-transparent opacity-80" />
           <div className="absolute inset-0 bg-sky-deep/5" />

@@ -3,6 +3,7 @@ import { Plus, Search, ExternalLink, Trash2, MapPin, Calendar, MoreVertical } fr
 import { motion } from 'motion/react';
 import { usePersistedData } from '../../hooks/usePersistedData';
 import { QuotationDrawer } from './QuotationDrawer';
+import type { Quotation } from '../../../types/admin';
 
 const container = {
   hidden: { opacity: 0 },
@@ -13,16 +14,6 @@ const itemAnim = {
   hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } },
 };
-
-interface Quotation {
-  id: string;
-  customer: string;
-  city: string;
-  size: string;
-  date: string;
-  status: string;
-  total: string;
-}
 
 const statusColors: Record<string, string> = {
   Sent: 'bg-sky-dim text-sky',
@@ -42,7 +33,7 @@ export const Quotations = () => {
   ];
   const [quotations, setQuotations] = usePersistedData('quotations', defaultQuotations);
 
-  const filtered = useMemo(() => quotations.filter((q: Quotation) => {
+  const filtered = useMemo(() => quotations.filter((q) => {
     const matchSearch =
       q.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       q.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -53,10 +44,10 @@ export const Quotations = () => {
 
   const handleDelete = (id: string) => {
     if (!window.confirm('Delete this quotation? This cannot be undone.')) return;
-    setQuotations((prev: any[]) => prev.filter((q) => q.id !== id));
+    setQuotations((prev) => prev.filter((q) => q.id !== id));
   };
 
-  const handleShare = (quote: any) => {
+  const handleShare = (quote: Quotation) => {
     const message = `Namaste ${quote.customer} ji, your solar quotation (${quote.id}) is ready. System: ${quote.size}. Amount: ${quote.total}. Please contact us for details.`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
@@ -232,7 +223,7 @@ export const Quotations = () => {
       <QuotationDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        onSave={(q) => setQuotations((prev: any[]) => [q, ...prev])}
+        onSave={(q) => setQuotations((prev) => [q, ...prev])}
       />
     </>
   );

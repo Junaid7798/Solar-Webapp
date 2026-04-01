@@ -5,10 +5,16 @@ export const CustomCursor = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
+
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(motionQuery.matches);
+    const handleMotionChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    motionQuery.addEventListener('change', handleMotionChange);
 
     const updateMousePosition = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -37,10 +43,11 @@ export const CustomCursor = () => {
       window.removeEventListener('mousemove', updateMousePosition);
       window.removeEventListener('mouseover', handleMouseOver);
       window.removeEventListener('resize', checkMobile);
+      motionQuery.removeEventListener('change', handleMotionChange);
     };
   }, []);
 
-  if (isMobile) return null;
+  if (isMobile || prefersReducedMotion) return null;
 
   return (
     <>

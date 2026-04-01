@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, Search, Plus, Bell, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import { usePersistedData } from '../../hooks/usePersistedData';
+import type { AMCContract, ColorKey } from '../../../types/admin';
 
 export const AMC = () => {
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -13,11 +14,11 @@ export const AMC = () => {
   ]);
 
   const totalContracts = amcList.length;
-  const dueSoon = amcList.filter((a: any) => a.status === 'Due Soon').length;
-  const overdue = amcList.filter((a: any) => a.status === 'Overdue').length;
-  const active = amcList.filter((a: any) => a.status === 'Active').length;
+  const dueSoon = amcList.filter((a) => a.status === 'Due Soon').length;
+  const overdue = amcList.filter((a) => a.status === 'Overdue').length;
+  const active = amcList.filter((a) => a.status === 'Active').length;
 
-  const filtered = amcList.filter((a: any) => {
+  const filtered = amcList.filter((a) => {
     const matchSearch =
       a.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       a.id.toLowerCase().includes(searchTerm.toLowerCase());
@@ -25,7 +26,7 @@ export const AMC = () => {
     return matchSearch && matchStatus;
   });
 
-  const handleRemind = (amc: any) => {
+  const handleRemind = (amc: AMCContract) => {
     const message = `Namaste ${amc.customer} ji, your solar system AMC service is ${amc.status === 'Overdue' ? 'overdue' : 'due soon'}. Next service date: ${amc.nextService}. Please contact us to schedule. - Asrar Solar`;
     window.open(`https://wa.me/91${amc.phone}?text=${encodeURIComponent(message)}`, '_blank');
   };
@@ -92,7 +93,7 @@ export const AMC = () => {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((amc: any) => (
+              {filtered.map((amc) => (
                 <tr key={amc.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
                   <td className="p-4 font-mono text-sm font-bold text-amber">{amc.id}</td>
                   <td className="p-4">
@@ -134,8 +135,13 @@ export const AMC = () => {
   );
 };
 
-const StatBox = ({ title, value, icon: Icon, color }: any) => {
-  const colors: any = {
+const StatBox = ({ title, value, icon: Icon, color }: {
+  title: string;
+  value: string;
+  icon: React.ComponentType<{ size?: number }>;
+  color: ColorKey;
+}) => {
+  const colors: Record<string, string> = {
     blue: 'bg-sky-dim text-sky',
     amber: 'bg-amber-dim text-amber',
     red: 'bg-red-500/10 text-red-400',

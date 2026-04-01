@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, PieChart as PieIcon, Activity } from 'lucide-react';
 import { usePersistedData } from '../../hooks/usePersistedData';
+import type { FinanceMonth, FinanceCategory, ColorKey } from '../../../types/admin';
 
 export const ProfitDashboard = () => {
   const [financeData, setFinanceData] = usePersistedData('profit_chart_data', [
@@ -23,8 +24,8 @@ export const ProfitDashboard = () => {
     { name: 'Misc', value: 10, color: '#7A8FA6' },
   ]);
 
-  const totalRevenue = (financeData as any[]).reduce((s: number, m: any) => s + (m.revenue || 0), 0);
-  const totalExpenses = (financeData as any[]).reduce((s: number, m: any) => s + (m.expenses || 0), 0);
+  const totalRevenue = financeData.reduce((s, m) => s + (m.revenue || 0), 0);
+  const totalExpenses = financeData.reduce((s, m) => s + (m.expenses || 0), 0);
   const netProfit = totalRevenue - totalExpenses;
   const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0.0';
 
@@ -164,12 +165,20 @@ export const ProfitDashboard = () => {
   );
 };
 
-const MetricCard = ({ title, value, change, isPositive = true, icon: Icon, color }: any) => {
-  const colorClasses: any = {
+const MetricCard = ({ title, value, change, isPositive = true, icon: Icon, color }: {
+  title: string;
+  value: string;
+  change?: string;
+  isPositive?: boolean;
+  icon: React.ComponentType<{ size?: number }>;
+  color: ColorKey;
+}) => {
+  const colorClasses: Record<ColorKey, string> = {
     blue: 'bg-sky-dim text-sky',
     red: 'bg-red-500/10 text-red-400',
     emerald: 'bg-emerald-dim text-emerald',
     sun: 'bg-amber-dim text-amber',
+    amber: 'bg-amber-dim text-amber',
   };
 
   return (

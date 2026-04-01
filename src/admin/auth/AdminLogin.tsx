@@ -2,19 +2,39 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Lock, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import {
+  validateAdminCredentials,
+  isAdminPasswordConfigured,
+  getRemainingLockoutMs,
+  recordLoginFailure,
+  resetLoginFailures,
+} from '../../lib/constants';
 
 export const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const passwordConfigured = isAdminPasswordConfigured();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123';
-    
-    if (password === adminPassword) {
+
+    const remaining = getRemainingLockoutMs();
+    if (remaining > 0) {
+      setError(`Too many failed attempts. Try again in ${Math.ceil(remaining / 60000)} minutes.`);
+      return;
+    }
+
+    if (!passwordConfigured) {
+      setError('Admin password is not configured. Set VITE_ADMIN_PASSWORD before using this panel.');
+      return;
+    }
+
+    if (validateAdminCredentials(password)) {
+      resetLoginFailures();
       onLogin();
       setError('');
     } else {
+      recordLoginFailure();
       setError('Invalid password');
     }
   };
@@ -51,9 +71,10 @@ export const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
           </div>
           <button 
             type="submit"
+            disabled={!passwordConfigured}
             className="w-full bg-sun hover:bg-sun-light text-sky-deep font-bold py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(255,179,71,0.2)]"
           >
-            Login
+            {passwordConfigured ? 'Login' : 'Configuration Required'}
           </button>
           
           {import.meta.env.DEV && (

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from '../../hooks/useTranslation';
 import { CheckCircle2, Phone, MessageCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { BUSINESS_PHONE, BUSINESS_PHONE_DISPLAY, GOOGLE_SHEETS_URL, WHATSAPP_URL } from '../../lib/constants';
 
 type FormData = {
   name: string;
@@ -22,8 +23,10 @@ export const Quote = () => {
   const { t, language } = useTranslation();
   const [step, setStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const timersRef = useRef<number[]>([]);
   
-  const { register, handleSubmit, watch, formState: { errors }, trigger } = useForm<FormData>({
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting }, trigger } = useForm<FormData>({
     defaultValues: {
       services: [],
       bill: 3000,
@@ -33,15 +36,20 @@ export const Quote = () => {
     }
   });
 
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, []);
+
   const nextStep = async () => {
     const valid = await trigger(['name', 'phone', 'email', 'city', 'address']);
     if (valid) setStep(2);
   };
 
   const onSubmit = async (data: FormData) => {
+    setSubmitError('');
     setIsSubmitted(true);
-
-    const GOOGLE_SHEETS_URL = import.meta.env.VITE_GOOGLE_SHEETS_URL as string | undefined;
 
     if (GOOGLE_SHEETS_URL) {
       try {
@@ -66,6 +74,7 @@ export const Quote = () => {
         });
       } catch (err: unknown) {
         console.error('Error saving to Google Sheets:', err);
+        setSubmitError('We could not save your enquiry to our dashboard, but we can still continue on WhatsApp.');
       }
     }
 
@@ -83,18 +92,16 @@ Best Time: ${data.time}
 Message: ${data.message}`);
 
     const whatsappTimer = setTimeout(() => {
-      window.open(`https://wa.me/918237655610?text=${msg}`, '_blank');
+      window.open(`${WHATSAPP_URL}?text=${msg}`, '_blank', 'noopener,noreferrer');
     }, 1500);
 
     const resetTimer = setTimeout(() => {
       setIsSubmitted(false);
       setStep(1);
+      reset();
     }, 6500);
 
-    return () => {
-      clearTimeout(whatsappTimer);
-      clearTimeout(resetTimer);
-    };
+    timersRef.current.push(whatsappTimer, resetTimer);
   };
 
   const trustPoints = [
@@ -156,6 +163,7 @@ Message: ${data.message}`);
                     </motion.div>
                     <h3 className="font-display font-bold text-4xl text-white mb-4">{t('quote', 'thanks1')}</h3>
                     <p className="text-gray text-lg">{t('quote', 'thanks2')}<br/>{t('quote', 'thanks3')}</p>
+                    {submitError && <p className="mt-4 text-sm text-amber-light">{submitError}</p>}
                     
                     {/* Confetti placeholder */}
                     <div className="absolute inset-0 pointer-events-none opacity-50" style={{ backgroundImage: 'radial-gradient(circle, var(--color-sun) 2px, transparent 2px)', backgroundSize: '40px 40px', backgroundPosition: '0 0, 20px 20px' }} />
@@ -178,9 +186,10 @@ Message: ${data.message}`);
                         <div className="grid md:grid-cols-2 gap-6">
                           <div>
                             <label htmlFor="name" className="block text-sm font-bold text-gray uppercase tracking-wider mb-2">{t('quote', 'name')} *</label>
-                            <input 
+                            <input
                               id="name"
-                              {...register('name', { required: true, minLength: 2 })}
+                              maxLength={100}
+                              {...register('name', { required: true, minLength: 2, maxLength: 100 })}
                               className={`w-full bg-light-bg border ${errors.name ? 'border-red-500' : 'border-sky/10'} rounded-xl px-4 py-3 focus:outline-none focus:border-sun transition-colors`}
                             />
                             {errors.name && <span className="text-red-500 text-xs mt-1">{t('quote', 'errName')}</span>}
@@ -190,6 +199,7 @@ Message: ${data.message}`);
                             <input 
                               id="phone"
                               type="tel"
+                              maxLength={10}
                               {...register('phone', { required: true, pattern: /^[0-9]{10}$/ })}
                               className={`w-full bg-light-bg border ${errors.phone ? 'border-red-500' : 'border-sky/10'} rounded-xl px-4 py-3 focus:outline-none focus:border-sun transition-colors`}
                             />
@@ -203,6 +213,7 @@ Message: ${data.message}`);
                             <input 
                               id="email"
                               type="email"
+                              maxLength={254}
                               {...register('email', { required: true, pattern: /^\S+@\S+$/i })}
                               className={`w-full bg-light-bg border ${errors.email ? 'border-red-500' : 'border-sky/10'} rounded-xl px-4 py-3 focus:outline-none focus:border-sun transition-colors`}
                             />
@@ -230,6 +241,7 @@ Message: ${data.message}`);
                           <label htmlFor="address" className="block text-sm font-bold text-gray uppercase tracking-wider mb-2">{t('quote', 'address')} *</label>
                           <textarea 
                             id="address"
+                            maxLength={500}
                             {...register('address', { required: true })}
                             rows={3}
                             className={`w-full bg-light-bg border ${errors.address ? 'border-red-500' : 'border-sky/10'} rounded-xl px-4 py-3 focus:outline-none focus:border-sun transition-colors resize-none`}
@@ -241,6 +253,7 @@ Message: ${data.message}`);
                           <button 
                             type="button"
                             onClick={nextStep}
+                            disabled={isSubmitting}
                             className="w-full bg-sky-deep hover:bg-sky text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
                           >
                             {t('quote', 'next')} <ArrowRight size={20} />
@@ -320,9 +333,10 @@ Message: ${data.message}`);
                         <div className="pt-8 mt-auto">
                           <button 
                             type="submit"
-                            className="w-full bg-sun hover:bg-sun-light text-sky-deep font-bold py-4 rounded-xl transition-all shadow-[0_10px_30px_rgba(255,179,71,0.3)] transform hover:-translate-y-1 uppercase tracking-wider"
+                            disabled={isSubmitting}
+                            className="w-full bg-sun hover:bg-sun-light text-sky-deep font-bold py-4 rounded-xl transition-all shadow-[0_10px_30px_rgba(255,179,71,0.3)] transform hover:-translate-y-1 uppercase tracking-wider disabled:opacity-70 disabled:transform-none"
                           >
-                            {t('quote', 'submit')}
+                            {isSubmitting ? 'Submitting...' : t('quote', 'submit')}
                           </button>
                         </div>
                       </motion.div>
@@ -364,21 +378,21 @@ Message: ${data.message}`);
               <div className="border-t border-white/10 pt-8">
                 <p className="text-gray text-sm font-bold uppercase tracking-wider mb-4">Direct Contact</p>
                 <div className="flex flex-col gap-4">
-                  <a href="tel:+918237655610" className="flex items-center gap-4 hover:text-sun transition-colors">
+                  <a href={`tel:+${BUSINESS_PHONE}`} className="flex items-center gap-4 hover:text-sun transition-colors">
                     <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center shrink-0">
                       <Phone size={20} />
                     </div>
                     <div>
-                      <p className="font-mono font-bold text-xl">+91 82376 55610</p>
+                      <p className="font-mono font-bold text-xl">{BUSINESS_PHONE_DISPLAY}</p>
                       <p className="text-gray text-sm">Call us anytime</p>
                     </div>
                   </a>
-                  <a href="https://wa.me/918237655610" target="_blank" rel="noreferrer" className="flex items-center gap-4 hover:text-teal transition-colors">
+                  <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="flex items-center gap-4 hover:text-teal transition-colors">
                     <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center shrink-0">
                       <MessageCircle size={20} />
                     </div>
                     <div>
-                      <p className="font-mono font-bold text-xl">+91 82376 55610</p>
+                      <p className="font-mono font-bold text-xl">{BUSINESS_PHONE_DISPLAY}</p>
                       <p className="text-gray text-sm">WhatsApp available</p>
                     </div>
                   </a>

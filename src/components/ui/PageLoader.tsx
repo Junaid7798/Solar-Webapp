@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export const PageLoader = () => {
@@ -6,12 +6,25 @@ export const PageLoader = () => {
   const [showSkip, setShowSkip] = useState(false);
 
   useEffect(() => {
-    const skipTimer = setTimeout(() => setShowSkip(true), 600);
-    const endTimer = setTimeout(() => setIsLoading(false), 2000); // Intro duration
+    const skipTimer = window.setTimeout(() => setShowSkip(true), 600);
+
+    const finish = () => setIsLoading(false);
+
+    if (document.readyState === 'complete') {
+      const quickTimer = window.setTimeout(finish, 1200);
+      return () => {
+        window.clearTimeout(quickTimer);
+        window.clearTimeout(skipTimer);
+      };
+    }
+
+    window.addEventListener('load', finish);
+    const fallbackTimer = window.setTimeout(finish, 3000);
 
     return () => {
-      clearTimeout(skipTimer);
-      clearTimeout(endTimer);
+      window.clearTimeout(skipTimer);
+      window.clearTimeout(fallbackTimer);
+      window.removeEventListener('load', finish);
     };
   }, []);
 
@@ -24,7 +37,6 @@ export const PageLoader = () => {
           transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
           className="fixed inset-0 z-[1000] bg-sky-deep flex flex-col items-center justify-center overflow-hidden"
         >
-          {/* Logo */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -39,27 +51,24 @@ export const PageLoader = () => {
             </span>
           </motion.div>
 
-          {/* Tagline Typing Effect */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
             className="font-display text-2xl text-gray italic mb-12 h-8"
           >
-            <Typewriter text="Suraj Sabka Hai — Apna Haq Lo." delay={400} />
+            <Typewriter text="Suraj Sabka Hai - Apna Haq Lo." delay={400} />
           </motion.div>
 
-          {/* Progress Line */}
           <div className="w-64 h-1 bg-white/10 rounded-full overflow-hidden relative">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: '100%' }}
-              transition={{ delay: 0.8, duration: 0.8, ease: "easeInOut" }}
+              transition={{ delay: 0.8, duration: 0.8, ease: 'easeInOut' }}
               className="absolute top-0 left-0 h-full bg-gradient-to-r from-sun to-teal"
             />
           </div>
 
-          {/* Skip Button */}
           <AnimatePresence>
             {showSkip && (
               <motion.button
@@ -79,20 +88,30 @@ export const PageLoader = () => {
   );
 };
 
-const Typewriter = ({ text, delay }: { text: string, delay: number }) => {
+const Typewriter = ({ text, delay }: { text: string; delay: number }) => {
   const [displayedText, setDisplayedText] = useState('');
 
   useEffect(() => {
-    let i = 0;
-    const timer = setTimeout(() => {
-      const interval = setInterval(() => {
-        setDisplayedText(text.substring(0, i + 1));
-        i++;
-        if (i === text.length) clearInterval(interval);
+    let index = 0;
+    let intervalId: number | undefined;
+
+    const timerId = window.setTimeout(() => {
+      intervalId = window.setInterval(() => {
+        index += 1;
+        setDisplayedText(text.substring(0, index));
+
+        if (index >= text.length && intervalId) {
+          window.clearInterval(intervalId);
+        }
       }, 30);
-      return () => clearInterval(interval);
     }, delay);
-    return () => clearTimeout(timer);
+
+    return () => {
+      window.clearTimeout(timerId);
+      if (intervalId) {
+        window.clearInterval(intervalId);
+      }
+    };
   }, [text, delay]);
 
   return <span>{displayedText}</span>;

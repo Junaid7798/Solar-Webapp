@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Package, Plus, Search, Filter, AlertTriangle, ArrowUpRight, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { usePersistedData } from '../../hooks/usePersistedData';
+import type { InventoryItem } from '../../../types/admin';
 
 const container = {
   hidden: { opacity: 0 },
@@ -12,16 +13,6 @@ const itemAnim = {
   hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } },
 };
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  category: string;
-  stock: number;
-  unit: string;
-  minStock: number;
-  price: number;
-}
 
 export const Inventory = () => {
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -39,11 +30,11 @@ export const Inventory = () => {
     { id: 'INV-004', name: 'MC4 Connectors (Pair)', category: 'Accessories', stock: 15, unit: 'Pairs', minStock: 40, price: 120 },
   ]);
 
-  const lowStockItems = (inventoryItems as InventoryItem[]).filter((i) => i.stock <= i.minStock);
-  const totalItems = (inventoryItems as InventoryItem[]).reduce((sum, i) => sum + i.stock, 0);
-  const stockValue = (inventoryItems as InventoryItem[]).reduce((sum, i) => sum + i.stock * i.price, 0);
+  const lowStockItems = inventoryItems.filter((i) => i.stock <= i.minStock);
+  const totalItems = inventoryItems.reduce((sum, i) => sum + i.stock, 0);
+  const stockValue = inventoryItems.reduce((sum, i) => sum + i.stock * i.price, 0);
 
-  const filtered = useMemo(() => (inventoryItems as InventoryItem[]).filter((i) => {
+  const filtered = useMemo(() => inventoryItems.filter((i) => {
     const matchSearch = i.name.toLowerCase().includes(searchTerm.toLowerCase()) || i.id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchCat = categoryFilter === 'All Categories' || i.category === categoryFilter;
     return matchSearch && matchCat;
@@ -60,7 +51,7 @@ export const Inventory = () => {
       minStock: Number(newItem.minStock) || 0,
       price: Number(newItem.price),
     };
-    setInventoryItems((prev: any[]) => [...prev, item]);
+    setInventoryItems((prev) => [...prev, item]);
     setNewItem({ name: '', category: 'Panels', stock: '', unit: 'Nos', minStock: '', price: '' });
     setShowAddModal(false);
   };
@@ -68,7 +59,7 @@ export const Inventory = () => {
   const handleAdjustStock = () => {
     const qty = Number(adjustQty);
     if (!manageItem || !qty || qty <= 0) return;
-    setInventoryItems((prev: any[]) => prev.map((i) =>
+    setInventoryItems((prev) => prev.map((i) =>
       i.id === manageItem.id
         ? { ...i, stock: Math.max(0, adjustMode === 'add' ? i.stock + qty : i.stock - qty) }
         : i

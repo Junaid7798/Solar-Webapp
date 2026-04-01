@@ -1,6 +1,7 @@
 import React from 'react';
 import { Bell, CheckCircle2, Plus } from 'lucide-react';
 import { usePersistedData } from '../../hooks/usePersistedData';
+import type { Reminder } from '../../../types/admin';
 
 export const Reminders = () => {
   const [activeTab, setActiveTab] = React.useState('pending');
@@ -14,27 +15,27 @@ export const Reminders = () => {
   ]);
 
   const handleComplete = (id: number) => {
-    setReminders((prev: any[]) =>
-      prev.map((r) => r.id === id ? { ...r, status: 'Completed' } : r)
+    setReminders((prev) =>
+      prev.map((r) => r.id === id ? { ...r, status: 'Completed' as const } : r)
     );
   };
 
   const handleAddTask = () => {
     if (!newTask.type || !newTask.customer || !newTask.date) return;
-    const task = {
+    const task: Reminder = {
       id: Date.now(),
       type: newTask.type,
       customer: newTask.customer,
       date: newTask.date,
-      priority: newTask.priority,
+      priority: newTask.priority as Reminder['priority'],
       status: 'Pending',
     };
-    setReminders((prev: any[]) => [...prev, task]);
+    setReminders((prev) => [...prev, task]);
     setNewTask({ type: '', customer: '', date: '', priority: 'Medium' });
     setShowAddForm(false);
   };
 
-  const displayed = (reminders as any[]).filter(
+  const displayed = reminders.filter(
     (r) => r.status.toLowerCase() === activeTab
   );
 
@@ -142,7 +143,7 @@ export const Reminders = () => {
           {displayed.length === 0 && (
             <p className="text-center text-white/30 text-sm py-6">No {activeTab} tasks.</p>
           )}
-          {displayed.map((reminder: any) => (
+          {displayed.map((reminder) => (
             <div key={reminder.id} className="flex items-center justify-between p-4 bg-depth border border-white/5 rounded-2xl hover:border-amber/30 transition-all group">
               <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${

@@ -3,6 +3,7 @@ import { Briefcase, Plus, Search, Filter, ChevronRight, Clock, CheckCircle2, Ale
 import { ProjectDrawer } from './ProjectDrawer';
 import { motion } from 'motion/react';
 import { usePersistedData } from '../../hooks/usePersistedData';
+import type { Project } from '../../../types/admin';
 
 const container = {
   hidden: { opacity: 0 },
@@ -18,7 +19,7 @@ export const Projects = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [stageFilter, setStageFilter] = useState('All Stages');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   // Use persisted data instead of static mock
   const [projects, setProjects] = usePersistedData('projects', [
@@ -47,12 +48,12 @@ export const Projects = () => {
   ]);
 
   const completedStatuses = ['Handover'];
-  const activeCount = projects.filter((p: any) => !completedStatuses.includes(p.status)).length;
-  const doneCount = projects.filter((p: any) => completedStatuses.includes(p.status)).length;
-  const margins = projects.map((p: any) => p.value > 0 ? ((p.value - p.expenses) / p.value) * 100 : 0);
-  const avgMargin = margins.length > 0 ? Math.round(margins.reduce((a: number, b: number) => a + b, 0) / margins.length) : 0;
+  const activeCount = projects.filter((p) => !completedStatuses.includes(p.status)).length;
+  const doneCount = projects.filter((p) => completedStatuses.includes(p.status)).length;
+  const margins = projects.map((p) => p.value > 0 ? ((p.value - p.expenses) / p.value) * 100 : 0);
+  const avgMargin = margins.length > 0 ? Math.round(margins.reduce((a, b) => a + b, 0) / margins.length) : 0;
 
-  const filtered = useMemo(() => projects.filter((p: any) => {
+  const filtered = useMemo(() => projects.filter((p) => {
     const matchSearch =
       p.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,13 +62,13 @@ export const Projects = () => {
     return matchSearch && matchStage;
   }), [projects, searchTerm, stageFilter]);
 
-  const openProject = (project: any) => {
+  const openProject = (project: Project | null) => {
     setSelectedProject(project);
     setIsDrawerOpen(true);
   };
 
-  const handleSaveProject = (updated: any) => {
-    setProjects((prev: any[]) =>
+  const handleSaveProject = (updated: Project) => {
+    setProjects((prev) =>
       prev.map((p) => p.id === updated.id ? { ...p, ...updated } : p)
     );
   };
@@ -157,7 +158,7 @@ export const Projects = () => {
 
       {/* Projects List */}
       <div className="grid grid-cols-1 gap-4">
-        {filtered.map((project: any) => (
+        {filtered.map((project) => (
           <motion.div 
             key={project.id}
             variants={itemAnim}
