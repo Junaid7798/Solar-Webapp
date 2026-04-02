@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { config } from '../../config';
 import { Facebook, Instagram, Youtube, Linkedin, Phone, Mail, MapPin, Sun, ArrowRight, Zap } from 'lucide-react';
 
 export const Footer = () => {
@@ -26,10 +27,10 @@ export const Footer = () => {
         <div className="absolute inset-0 dot-pattern opacity-25 pointer-events-none" />
 
         {/* Ambient orbs */}
-        <div className="absolute left-[-15%] top-[-40%] w-[500px] h-[500px] rounded-full blur-[130px] opacity-18 pointer-events-none"
-          style={{ background: 'radial-gradient(circle,#F59E0B,transparent 70%)' }} />
-        <div className="absolute right-[-10%] bottom-[-40%] w-[400px] h-[400px] rounded-full blur-[110px] opacity-15 pointer-events-none"
-          style={{ background: 'radial-gradient(circle,#0EA5E9,transparent 70%)' }} />
+        <div className="absolute left-[-15%] top-[-40%] w-[500px] h-[500px] rounded-full blur-[130px] pointer-events-none"
+          style={{ opacity: 0.18, background: 'radial-gradient(circle,#F59E0B,transparent 70%)' }} />
+        <div className="absolute right-[-10%] bottom-[-40%] w-[400px] h-[400px] rounded-full blur-[110px] pointer-events-none"
+          style={{ opacity: 0.15, background: 'radial-gradient(circle,#0EA5E9,transparent 70%)' }} />
 
         <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
           style={{ background: 'linear-gradient(90deg,transparent,rgba(245,158,11,0.5),rgba(14,165,233,0.3),rgba(16,185,129,0.3),transparent)' }} />
@@ -71,7 +72,7 @@ export const Footer = () => {
                 <ArrowRight size={16} className="relative z-10 group-hover:translate-x-1 transition-transform" />
               </motion.button>
 
-              <a href="https://wa.me/918237655610" target="_blank" rel="noreferrer"
+              <a href={config.whatsappUrl} target="_blank" rel="noreferrer"
                 className="cursor-pointer px-8 py-4 rounded-2xl font-bold text-white text-sm flex items-center gap-2.5 glass border hover:opacity-80 transition-all"
                 style={{ borderColor: 'rgba(255,255,255,0.09)' }}>
                 <Phone size={15} style={{ color: '#10B981' }} />
@@ -84,8 +85,8 @@ export const Footer = () => {
 
       {/* ── Main Footer ── */}
       <div className="border-t pt-20 pb-12 relative" style={{ borderColor: 'rgba(255,255,255,0.04)', background: 'rgba(7,9,15,0.98)' }}>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[160px] blur-[90px] opacity-8 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse,#F59E0B,transparent 70%)' }} />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[160px] blur-[90px] pointer-events-none"
+          style={{ opacity: 0.08, background: 'radial-gradient(ellipse,#F59E0B,transparent 70%)' }} />
 
         <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
@@ -123,7 +124,7 @@ export const Footer = () => {
                 {['home','services','calculator','getQuote','about','contact'].map(link => (
                   <li key={link}>
                     <button
-                      onClick={() => document.getElementById(link === 'getQuote' ? 'get-quote' : link)?.scrollIntoView({ behavior: 'smooth' })}
+                      onClick={() => document.getElementById(link === 'getQuote' || link === 'contact' ? 'get-quote' : link)?.scrollIntoView({ behavior: 'smooth' })}
                       className="cursor-pointer group flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest transition-colors duration-200 hover:text-white"
                       style={{ color: '#64748B' }}
                     >
@@ -140,8 +141,8 @@ export const Footer = () => {
               <h4 className="font-display font-extrabold text-sm uppercase tracking-wider text-white mb-6">Contact Us</h4>
               <ul className="space-y-5">
                 {[
-                  { icon: Phone,  href: 'tel:+918237655610',          label: '+91 82376 55610',        sub: 'Mon–Sat, 9am–7pm', color: '#F59E0B' },
-                  { icon: Mail,   href: 'mailto:Junaidk5610@gmail.com', label: 'Junaidk5610@gmail.com', sub: '',                 color: '#0EA5E9' },
+                  { icon: Phone,  href: `tel:+${config.businessPhone}`,  label: '+91 82376 55610',        sub: 'Mon–Sat, 9am–7pm', color: '#F59E0B' },
+                  { icon: Mail,   href: `mailto:${config.businessEmail}`, label: config.businessEmail, sub: '',                 color: '#0EA5E9' },
                 ].map(({ icon: Icon, href, label, sub, color }, i) => (
                   <li key={i}>
                     <a href={href} className="cursor-pointer flex items-start gap-3 group">
@@ -188,9 +189,9 @@ export const Footer = () => {
             </div>
             <div className="flex flex-wrap justify-center gap-x-5 gap-y-2">
               {[
-                { href:'tel:+918237655610', label:'8237655610' },
-                { href:'mailto:Junaidk5610@gmail.com', label:'Junaidk5610@gmail.com' },
-                { href:'https://wa.me/918237655610', label:'WhatsApp' },
+                { href:`tel:+${config.businessPhone}`, label:'8237655610' },
+                { href:`mailto:${config.businessEmail}`, label:config.businessEmail },
+                { href:config.whatsappUrl, label:'WhatsApp' },
                 { href:'https://linkedin.com/in/junaid-khan-b96b2a246', label:'LinkedIn' },
                 { href:'https://automation-website-testimonial.vercel.app', label:'Portfolio' },
               ].map(({ href, label }) => (
@@ -209,7 +210,7 @@ export const Footer = () => {
   );
 };
 
-const SocialBtn = ({ icon: Icon, label, hoverColor }: { icon: any; label: string; hoverColor: string }) => (
+const SocialBtn = ({ icon: Icon, label, hoverColor }: { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; label: string; hoverColor: string }) => (
   <a
     href="#"
     aria-label={label}

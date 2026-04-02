@@ -71,7 +71,22 @@ export const ProjectDrawer = ({ isOpen, onClose, project, onSave }: any) => {
 
   const handleSave = () => {
     if (onSave && project) {
-      onSave({ ...project, status: stages[currentStageIndex], expenses: totalExpenses });
+      const progressMap: Record<string, number> = {
+        'Site Survey': 5,
+        'Material Procurement': 20,
+        'Installation': 40,
+        'Net Metering': 60,
+        'MSEDCL Approval': 75,
+        'Subsidy Claim': 90,
+        'Handover': 100,
+      };
+      const newStatus = stages[currentStageIndex];
+      onSave({
+        ...project,
+        status: newStatus,
+        progress: progressMap[newStatus] ?? project.progress ?? 0,
+        expenses: totalExpenses,
+      });
     }
     onClose();
   };

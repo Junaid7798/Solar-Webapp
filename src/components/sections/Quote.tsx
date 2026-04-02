@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from '../../hooks/useTranslation';
-import { CheckCircle2, Phone, MessageCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { config } from '../../config';
+import { CheckCircle2, Phone, MessageCircle, ArrowRight, ArrowLeft, Shield, Clock, Eye, Award } from 'lucide-react';
 
 type FormData = {
   name: string;
@@ -22,8 +23,16 @@ export const Quote = () => {
   const { t, language } = useTranslation();
   const [step, setStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const timerRefs = useRef<NodeJS.Timeout[]>([]);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      timerRefs.current.forEach(clearTimeout);
+    };
+  }, []);
   
-  const { register, handleSubmit, watch, formState: { errors }, trigger } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors }, trigger, reset } = useForm<FormData>({
     defaultValues: {
       services: [],
       bill: 3000,
@@ -32,6 +41,22 @@ export const Quote = () => {
       time: 'Anytime'
     }
   });
+
+  // Pre-fill from calculator
+  useEffect(() => {
+    const prefill = sessionStorage.getItem('calc_prefill');
+    if (prefill) {
+      try {
+        const data = JSON.parse(prefill);
+        reset((prev) => ({
+          ...prev,
+          bill: data.bill || prev.bill,
+          size: data.size || prev.size,
+        }));
+        sessionStorage.removeItem('calc_prefill');
+      } catch { /* ignore */ }
+    }
+  }, [reset]);
 
   const nextStep = async () => {
     const valid = await trigger(['name', 'phone', 'email', 'city', 'address']);
@@ -83,7 +108,7 @@ Best Time: ${data.time}
 Message: ${data.message}`);
 
     const whatsappTimer = setTimeout(() => {
-      window.open(`https://wa.me/918237655610?text=${msg}`, '_blank');
+      window.open(`${config.whatsappUrl}?text=${msg}`, '_blank');
     }, 1500);
 
     const resetTimer = setTimeout(() => {
@@ -91,17 +116,14 @@ Message: ${data.message}`);
       setStep(1);
     }, 6500);
 
-    return () => {
-      clearTimeout(whatsappTimer);
-      clearTimeout(resetTimer);
-    };
+    timerRefs.current.push(whatsappTimer, resetTimer);
   };
 
   const trustPoints = [
-    { id: 'trust1', icon: CheckCircle2 },
-    { id: 'trust2', icon: CheckCircle2 },
-    { id: 'trust3', icon: CheckCircle2 },
-    { id: 'trust4', icon: CheckCircle2 },
+    { id: 'trust1', icon: Eye },
+    { id: 'trust2', icon: Clock },
+    { id: 'trust3', icon: Shield },
+    { id: 'trust4', icon: Award },
   ];
 
   return (
@@ -203,7 +225,7 @@ Message: ${data.message}`);
                             <input 
                               id="email"
                               type="email"
-                              {...register('email', { required: true, pattern: /^\S+@\S+$/i })}
+                              {...register('email', { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ })}
                               className={`w-full bg-light-bg border ${errors.email ? 'border-red-500' : 'border-sky/10'} rounded-xl px-4 py-3 focus:outline-none focus:border-sun transition-colors`}
                             />
                             {errors.email && <span className="text-red-500 text-xs mt-1">{t('quote', 'errEmail')}</span>}
@@ -216,11 +238,42 @@ Message: ${data.message}`);
                               className="w-full bg-light-bg border border-sky/10 rounded-xl px-4 py-3 focus:outline-none focus:border-sun transition-colors appearance-none"
                             >
                               <option value="">Select City</option>
-                              <option value="Mumbai">Mumbai</option>
-                              <option value="Pune">Pune</option>
-                              <option value="Nagpur">Nagpur</option>
-                              <option value="Nashik">Nashik</option>
+                              <option value="Ahmednagar">Ahmednagar</option>
+                              <option value="Akola">Akola</option>
+                              <option value="Amravati">Amravati</option>
                               <option value="Aurangabad">Aurangabad</option>
+                              <option value="Beed">Beed</option>
+                              <option value="Bhandara">Bhandara</option>
+                              <option value="Buldhana">Buldhana</option>
+                              <option value="Chandrapur">Chandrapur</option>
+                              <option value="Dhule">Dhule</option>
+                              <option value="Gadchiroli">Gadchiroli</option>
+                              <option value="Gondia">Gondia</option>
+                              <option value="Hingoli">Hingoli</option>
+                              <option value="Jalgaon">Jalgaon</option>
+                              <option value="Jalna">Jalna</option>
+                              <option value="Kolhapur">Kolhapur</option>
+                              <option value="Latur">Latur</option>
+                              <option value="Mumbai">Mumbai</option>
+                              <option value="Nagpur">Nagpur</option>
+                              <option value="Nanded">Nanded</option>
+                              <option value="Nandurbar">Nandurbar</option>
+                              <option value="Nashik">Nashik</option>
+                              <option value="Navi Mumbai">Navi Mumbai</option>
+                              <option value="Osmanabad">Osmanabad</option>
+                              <option value="Palghar">Palghar</option>
+                              <option value="Parbhani">Parbhani</option>
+                              <option value="Pune">Pune</option>
+                              <option value="Raigad">Raigad</option>
+                              <option value="Ratnagiri">Ratnagiri</option>
+                              <option value="Sangli">Sangli</option>
+                              <option value="Satara">Satara</option>
+                              <option value="Sindhudurg">Sindhudurg</option>
+                              <option value="Solapur">Solapur</option>
+                              <option value="Thane">Thane</option>
+                              <option value="Wardha">Wardha</option>
+                              <option value="Washim">Washim</option>
+                              <option value="Yavatmal">Yavatmal</option>
                               <option value="Other">Other</option>
                             </select>
                           </div>
@@ -364,7 +417,7 @@ Message: ${data.message}`);
               <div className="border-t border-white/10 pt-8">
                 <p className="text-gray text-sm font-bold uppercase tracking-wider mb-4">Direct Contact</p>
                 <div className="flex flex-col gap-4">
-                  <a href="tel:+918237655610" className="flex items-center gap-4 hover:text-sun transition-colors">
+                  <a href={`tel:+${config.businessPhone}`} className="flex items-center gap-4 hover:text-sun transition-colors">
                     <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center shrink-0">
                       <Phone size={20} />
                     </div>
@@ -373,7 +426,7 @@ Message: ${data.message}`);
                       <p className="text-gray text-sm">Call us anytime</p>
                     </div>
                   </a>
-                  <a href="https://wa.me/918237655610" target="_blank" rel="noreferrer" className="flex items-center gap-4 hover:text-teal transition-colors">
+                  <a href={config.whatsappUrl} target="_blank" rel="noreferrer" className="flex items-center gap-4 hover:text-teal transition-colors">
                     <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center shrink-0">
                       <MessageCircle size={20} />
                     </div>

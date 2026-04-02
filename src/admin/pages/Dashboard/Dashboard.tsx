@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { BeforeAfterSlider } from '../../../components/ui/BeforeAfterSlider';
 import { Camera, History, ArrowRight } from 'lucide-react';
 import { usePersistedData } from '../../hooks/usePersistedData';
+import { useCountUp } from '../../hooks/useCountUp';
+import type { Lead } from '../../../types/lead';
 
 const container = {
   hidden: { opacity: 0 },
@@ -25,26 +27,11 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-interface Lead {
-  timestamp?: string; Timestamp?: string;
-  name?: string; Name?: string;
-  phone?: string; Phone?: string;
-  email?: string; Email?: string;
-  city?: string; City?: string;
-  address?: string; Address?: string;
-  services?: string; Services?: string;
-  bill?: string; Bill?: string;
-  size?: string; Size?: string;
-  roof?: string; Roof?: string;
-  time?: string; Time?: string;
-  message?: string; Message?: string;
-  [key: number]: string;
-}
-
 export const Dashboard = () => {
   const navigate = useNavigate();
   const [leads, setLeads] = React.useState<Lead[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [period, setPeriod] = React.useState<'W' | 'M'>('W');
   const GOOGLE_SHEETS_URL = import.meta.env.VITE_GOOGLE_SHEETS_URL as string | undefined;
 
   const [projects] = usePersistedData('projects', []);
@@ -52,23 +39,26 @@ export const Dashboard = () => {
   const [financeData] = usePersistedData('finance_data', [{ revenue: 0, expenses: 0 }]);
 
   React.useEffect(() => {
-    fetchLeads();
-  }, []);
-
-  const fetchLeads = async () => {
-    if (!GOOGLE_SHEETS_URL) return;
-    setIsLoading(true);
-    try {
-      const response = await fetch(GOOGLE_SHEETS_URL);
-      if (!response.ok) throw new Error('Failed to fetch data');
-      const data: Lead[] = await response.json();
-      setLeads(data);
-    } catch (err) {
-      console.error('Dashboard fetch error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const controller = new AbortController();
+    const run = async () => {
+      if (!GOOGLE_SHEETS_URL) return;
+      setIsLoading(true);
+      try {
+        const response = await fetch(GOOGLE_SHEETS_URL, { signal: controller.signal });
+        if (!response.ok) throw new Error('Failed to fetch data');
+        const data: Lead[] = await response.json();
+        setLeads(data);
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Dashboard fetch error:', err);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    run();
+    return () => controller.abort();
+  }, [GOOGLE_SHEETS_URL]);
 
   const stats = React.useMemo(() => {
     const totalLeads = leads.length;
@@ -127,21 +117,31 @@ export const Dashboard = () => {
     : totalProfit > 0 ? `₹${totalProfit.toLocaleString()}` : '₹0';
 
   // Priority projects: active ones sorted by urgency (just take first 2)
-  const completedStatuses = ['Completed', 'Delivered'];
+  const completedStatuses = ['Handover'];
   const activeProjects = (projects as any[]).filter((p: any) => !completedStatuses.includes(p.status));
   const priorityProjects = activeProjects.slice(0, 2);
 
-  // Revenue trend from financeData (last 7 months or weeks)
-  const revenueData = (financeData as any[]).length > 0
-    ? (financeData as any[]).slice(-7).map((m: any, i: number) => ({
-        name: m.month || m.name || `W${i + 1}`,
-        value: m.revenue || 0,
-      }))
-    : [
+  // Revenue trend from financeData — period controls label/display
+  const revenueData = React.useMemo(() => {
+    const all = financeData as any[];
+    if (all.length === 0) {
+      return [
         { name: 'Jan', value: 0 }, { name: 'Feb', value: 0 }, { name: 'Mar', value: 0 },
         { name: 'Apr', value: 0 }, { name: 'May', value: 0 }, { name: 'Jun', value: 0 },
         { name: 'Jul', value: 0 },
       ];
+    }
+    if (period === 'W') {
+      return all.slice(-7).map((m: any, i: number) => ({
+        name: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i] ?? `D${i + 1}`,
+        value: m.revenue || 0,
+      }));
+    }
+    return all.slice(-12).map((m: any, i: number) => ({
+      name: m.month || m.name || `M${i + 1}`,
+      value: m.revenue || 0,
+    }));
+  }, [financeData, period]);
 
   return (
     <motion.div 
@@ -176,11 +176,11 @@ export const Dashboard = () => {
           <div className="flex justify-between items-center mb-6">
             <div>
               <h2 className="text-lg md:text-xl font-bold font-display text-white">Revenue Trend</h2>
-              <p className="text-[10px] md:text-xs text-white/40">Daily revenue for the current week</p>
+              <p className="text-[10px] md:text-xs text-white/40">{period === 'W' ? 'Daily revenue for the current week' : 'Monthly revenue overview'}</p>
             </div>
             <div className="flex gap-1.5">
-              <button className="px-2.5 py-1 text-[10px] font-bold bg-amber text-depth rounded-lg">W</button>
-              <button className="px-2.5 py-1 text-[10px] font-bold bg-depth text-white/40 rounded-lg">M</button>
+              <button onClick={() => setPeriod('W')} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg ${period === 'W' ? 'bg-amber text-depth' : 'bg-depth text-white/40 hover:text-white'}`}>W</button>
+              <button onClick={() => setPeriod('M')} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg ${period === 'M' ? 'bg-amber text-depth' : 'bg-depth text-white/40 hover:text-white'}`}>M</button>
             </div>
           </div>
           <div className="h-[200px] md:h-[300px] w-full">
@@ -321,7 +321,7 @@ export const Dashboard = () => {
             <div>
               <h2 className="text-lg md:text-xl font-bold font-display text-white flex items-center gap-2">
                 <Camera className="text-amber" size={20} />
-                Recent Testimonies
+                Recent Testimonials
               </h2>
               <p className="text-[10px] md:text-xs text-white/40">Latest project completions</p>
             </div>
@@ -331,7 +331,7 @@ export const Dashboard = () => {
               <div key={i} className="relative aspect-square rounded-xl overflow-hidden group">
                 <img
                   src={`https://picsum.photos/seed/testimony_${i}/400/400`}
-                  alt="Testimony"
+                  alt="Testimonial"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   referrerPolicy="no-referrer"
                 />
@@ -348,22 +348,6 @@ export const Dashboard = () => {
       </div>
     </motion.div>
   );
-};
-
-const useCountUp = (target: number, duration = 1200) => {
-  const [count, setCount] = React.useState(0);
-  React.useEffect(() => {
-    if (target === 0) { setCount(0); return; }
-    const start = performance.now();
-    const raf = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(eased * target));
-      if (progress < 1) requestAnimationFrame(raf);
-    };
-    requestAnimationFrame(raf);
-  }, [target, duration]);
-  return count;
 };
 
 const StatCard = ({ title, value, icon: Icon, color, trend, isPositive }: any) => {

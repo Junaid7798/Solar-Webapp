@@ -8,16 +8,19 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import { LandingPage } from './pages/LandingPage';
 import { AdminApp } from './admin/AdminApp';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/admin/*" element={<AdminApp />} />
-        </Routes>
-      </BrowserRouter>
-    </LanguageProvider>
+    <ErrorBoundary>
+      <LanguageProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/admin/*" element={<AdminApp />} />
+          </Routes>
+        </BrowserRouter>
+      </LanguageProvider>
+    </ErrorBoundary>
   );
 }

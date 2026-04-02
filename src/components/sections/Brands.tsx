@@ -82,7 +82,9 @@ export const Brands = () => {
             <div className="w-full md:w-1/3 aspect-video bg-white/95 rounded-2xl flex items-center justify-center p-6 relative overflow-hidden ring-4 ring-white/10 shadow-[0_0_40px_rgba(255,255,255,0.05)] group hover:shadow-[0_0_60px_rgba(245,158,11,0.2)] transition-all duration-500">
                <img 
                  src="/images/luminous-ecowatt.webp" 
-                 alt="Luminous EcoWatt Inverter & Battery Combo" 
+                 alt="Luminous EcoWatt Inverter & Battery Combo"
+                 loading="lazy"
+                 decoding="async"
                  className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
                  style={{ mixBlendMode: 'multiply' }}
                  referrerPolicy="no-referrer"

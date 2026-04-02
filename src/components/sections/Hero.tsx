@@ -83,8 +83,8 @@ export const Hero = () => {
       {/* ── Ambient Orbs ── */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-visible">
         <motion.div
-           style={{ x: orb1X, y: orb1Y, background: 'radial-gradient(circle, #F59E0B 0%, #FCD34D 30%, transparent 70%)' }}
-          className="animate-orb1 absolute top-[10%] left-[5%] w-[450px] h-[450px] rounded-full blur-[130px] opacity-15"
+           style={{ x: orb1X, y: orb1Y, opacity: 0.15, background: 'radial-gradient(circle, #F59E0B 0%, #FCD34D 30%, transparent 70%)' }}
+          className="animate-orb1 absolute top-[10%] left-[5%] w-[450px] h-[450px] rounded-full blur-[130px]"
         />
         <motion.div
            style={{ x: orb2X, y: orb2Y, background: 'radial-gradient(circle, #0EA5E9 0%, #38BDF8 30%, transparent 70%)' }}

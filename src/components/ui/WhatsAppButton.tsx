@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { config } from '../../config';
 import { X } from 'lucide-react';
 
 export const WhatsAppButton = () => {
@@ -8,30 +9,28 @@ export const WhatsAppButton = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [showBubble, setShowBubble] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const bubbleHideRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Show button after 10s
     const btnTimer = setTimeout(() => setIsVisible(true), 10000);
     
-    // Show bubble after 12s
     const bubbleTimer = setTimeout(() => {
       if (!sessionStorage.getItem('waBubbleShown')) {
         setShowBubble(true);
         sessionStorage.setItem('waBubbleShown', 'true');
-        
-        // Hide bubble after 5s
-        setTimeout(() => setShowBubble(false), 5000);
+        bubbleHideRef.current = setTimeout(() => setShowBubble(false), 5000);
       }
     }, 12000);
 
     return () => {
       clearTimeout(btnTimer);
       clearTimeout(bubbleTimer);
+      if (bubbleHideRef.current) clearTimeout(bubbleHideRef.current);
     };
   }, []);
 
   const handleClick = () => {
-    window.open('https://wa.me/918237655610', '_blank');
+    window.open(config.whatsappUrl, '_blank');
   };
 
   return (

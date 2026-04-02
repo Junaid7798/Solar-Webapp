@@ -1,10 +1,11 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import QRCode from 'qrcode';
+import { config } from '../../config';
 
-const BUSINESS_NAME = import.meta.env.VITE_BUSINESS_NAME || 'Asrar Solar';
-const BUSINESS_TAGLINE = import.meta.env.VITE_BUSINESS_TAGLINE || 'Maharashtra Solar Specialists';
-const BUSINESS_PHONE = import.meta.env.VITE_BUSINESS_PHONE || '918237655610';
+const BUSINESS_NAME = config.businessName;
+const BUSINESS_TAGLINE = config.businessTagline;
+const BUSINESS_PHONE = config.businessPhone;
 
 interface QuotationData {
   id: string;

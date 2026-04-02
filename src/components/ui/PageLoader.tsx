@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export const PageLoader = () => {
@@ -81,18 +81,24 @@ export const PageLoader = () => {
 
 const Typewriter = ({ text, delay }: { text: string, delay: number }) => {
   const [displayedText, setDisplayedText] = useState('');
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    let i = 0;
     const timer = setTimeout(() => {
-      const interval = setInterval(() => {
+      let i = 0;
+      intervalRef.current = setInterval(() => {
         setDisplayedText(text.substring(0, i + 1));
         i++;
-        if (i === text.length) clearInterval(interval);
+        if (i === text.length && intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
       }, 30);
-      return () => clearInterval(interval);
     }, delay);
-    return () => clearTimeout(timer);
+
+    return () => {
+      clearTimeout(timer);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [text, delay]);
 
   return <span>{displayedText}</span>;

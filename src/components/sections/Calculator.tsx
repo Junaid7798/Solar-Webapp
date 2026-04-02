@@ -38,6 +38,7 @@ export const Calculator = () => {
   });
 
   const calculateEstimate = () => {
+    if (bill <= 0) return;
     setRoofWarning(roof < MIN_ROOF_FOR_MIN_SYSTEM);
     setIsCalculated(false);
 
@@ -317,7 +318,13 @@ export const Calculator = () => {
                     </div>
 
                     <button 
-                      onClick={() => document.getElementById('get-quote')?.scrollIntoView({ behavior: 'smooth' })}
+                      onClick={() => {
+                        sessionStorage.setItem('calc_prefill', JSON.stringify({
+                          bill: bill,
+                          size: results.systemSize > 0 ? `${results.systemSize}kW` : 'Not Sure',
+                        }));
+                        document.getElementById('get-quote')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
                       className="w-full bg-sky-deep hover:bg-sky text-white font-bold py-4 rounded-xl transition-all uppercase tracking-wider font-sans"
                     >
                       {t('calculator', 'getExact')}

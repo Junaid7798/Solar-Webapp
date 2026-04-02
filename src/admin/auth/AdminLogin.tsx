@@ -2,18 +2,40 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Lock, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 
 export const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123';
-    
+    setError('');
+    setLoading(true);
+
+    // Supabase auth if configured
+    if (isSupabaseConfigured()) {
+      const { error: authError } = await supabase!.auth.signInWithPassword({ email, password });
+      setLoading(false);
+      if (authError) {
+        setError('Invalid credentials');
+      } else {
+        onLogin();
+      }
+      return;
+    }
+
+    // Fallback: password-only auth (legacy)
+    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
+    setLoading(false);
+    if (!adminPassword) {
+      setError('Admin password not configured. Set VITE_ADMIN_PASSWORD in your .env file.');
+      return;
+    }
     if (password === adminPassword) {
       onLogin();
-      setError('');
     } else {
       setError('Invalid password');
     }
@@ -36,27 +58,41 @@ export const AdminLogin = ({ onLogin }: { onLogin: () => void }) => {
           <Lock className="text-sun" size={32} />
         </div>
         <h1 className="text-3xl font-display font-bold text-white text-center mb-2">Admin Login</h1>
-        <p className="text-gray text-center mb-8">Enter the master password to access the ERP dashboard.</p>
+        <p className="text-gray text-center mb-8">
+          {isSupabaseConfigured() ? 'Enter your credentials to access the dashboard.' : 'Enter the master password to access the ERP dashboard.'}
+        </p>
         
         <form onSubmit={handleLogin} className="space-y-6">
+          {isSupabaseConfigured() && (
+            <div>
+              <input 
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="w-full bg-sky-deep border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-sun transition-colors"
+              />
+            </div>
+          )}
           <div>
             <input 
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
+              placeholder={isSupabaseConfigured() ? 'Password' : 'Master Password'}
               className="w-full bg-sky-deep border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-sun transition-colors"
             />
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           </div>
           <button 
             type="submit"
-            className="w-full bg-sun hover:bg-sun-light text-sky-deep font-bold py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(255,179,71,0.2)]"
+            disabled={loading}
+            className="w-full bg-sun hover:bg-sun-light text-sky-deep font-bold py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(255,179,71,0.2)] disabled:opacity-60"
           >
-            Login
+            {loading ? 'Signing in...' : 'Login'}
           </button>
           
-          {import.meta.env.DEV && (
+          {import.meta.env.DEV && !isSupabaseConfigured() && (
             <button
               type="button"
               onClick={onLogin}

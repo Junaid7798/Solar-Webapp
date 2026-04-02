@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { MessageSquare, Plus, Search, Copy, Send, Trash2, Edit2, X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { usePersistedData } from '../../hooks/usePersistedData';
+import { useConfirm } from '../../hooks/useConfirm';
 
 const BUSINESS_NAME = import.meta.env.VITE_BUSINESS_NAME || 'Asrar Solar';
 
@@ -19,6 +20,7 @@ export const WhatsAppTemplates = () => {
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [testPhone, setTestPhone] = useState('');
   const [showTestInput, setShowTestInput] = useState<number | null>(null);
+  const { openConfirm, ConfirmDialogWrapper } = useConfirm();
 
   const [templates, setTemplates] = usePersistedData<Template[]>('whatsapp_templates', [
     { id: 1, name: 'Initial Lead Greeting', content: `Namaste {{name}} ji, thank you for inquiring with ${BUSINESS_NAME}. We have received your request for {{service}} in {{city}}. Our team will contact you shortly.` },
@@ -54,9 +56,14 @@ export const WhatsAppTemplates = () => {
     setShowForm(false);
   };
 
-  const handleDelete = (id: number) => {
-    if (!window.confirm('Delete this template?')) return;
-    setTemplates((prev) => prev.filter((t) => t.id !== id));
+  const handleDelete = async (id: number) => {
+    const confirmed = await openConfirm({
+      title: 'Delete Template',
+      message: 'Are you sure? This cannot be undone.',
+    });
+    if (confirmed) {
+      setTemplates((prev) => prev.filter((t) => t.id !== id));
+    }
   };
 
   const handleCopy = async (t: Template) => {
@@ -215,6 +222,7 @@ export const WhatsAppTemplates = () => {
           </>
         )}
       </AnimatePresence>
-    </>
+    <ConfirmDialogWrapper />
+  </>
   );
 };

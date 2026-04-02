@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'motion/react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { config } from '../../config';
 import { Sun, Wrench, Zap, Battery, BarChart3, CalendarCheck, ArrowRight, Phone, MessageCircle } from 'lucide-react';
 
 const SERVICES = [
@@ -195,10 +196,10 @@ export const Services = () => {
       {/* Background */}
       <div className="absolute inset-0 grid-pattern opacity-100 pointer-events-none" />
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="animate-orb1 absolute -top-20 right-[-5%] w-[500px] h-[500px] rounded-full blur-[130px] opacity-15"
-          style={{ background: 'radial-gradient(circle,#F59E0B,transparent 70%)' }} />
-        <div className="animate-orb2 absolute bottom-0 left-[-5%] w-[400px] h-[400px] rounded-full blur-[110px] opacity-12"
-          style={{ background: 'radial-gradient(circle,#0EA5E9,transparent 70%)' }} />
+        <div className="animate-orb1 absolute -top-20 right-[-5%] w-[500px] h-[500px] rounded-full blur-[130px]"
+          style={{ opacity: 0.15, background: 'radial-gradient(circle,#F59E0B,transparent 70%)' }} />
+        <div className="animate-orb2 absolute bottom-0 left-[-5%] w-[400px] h-[400px] rounded-full blur-[110px]"
+          style={{ opacity: 0.12, background: 'radial-gradient(circle,#0EA5E9,transparent 70%)' }} />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
@@ -247,13 +248,13 @@ export const Services = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 shrink-0">
-            <a href="tel:+918237655610"
+            <a href={`tel:+${config.businessPhone}`}
               className="cursor-pointer flex items-center gap-2 px-6 py-3.5 rounded-xl glass text-white font-bold text-sm border hover:opacity-80 transition-all"
               style={{ borderColor: 'rgba(255,255,255,0.10)' }}>
               <Phone size={15} style={{ color: '#F59E0B' }} />
               {t('services', 'callNow')}
             </a>
-            <a href="https://wa.me/918237655610" target="_blank" rel="noreferrer"
+            <a href={config.whatsappUrl} target="_blank" rel="noreferrer"
               className="cursor-pointer flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90"
               style={{ background: 'linear-gradient(135deg,#10B981,#34D399)', boxShadow: '0 0 24px rgba(16,185,129,0.30)' }}>
               <MessageCircle size={15} />

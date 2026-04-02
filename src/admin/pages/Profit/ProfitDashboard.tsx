@@ -7,7 +7,7 @@ import { TrendingUp, TrendingDown, DollarSign, PieChart as PieIcon, Activity } f
 import { usePersistedData } from '../../hooks/usePersistedData';
 
 export const ProfitDashboard = () => {
-  const [financeData, setFinanceData] = usePersistedData('profit_chart_data', [
+  const [financeData, setFinanceData] = usePersistedData('finance_data', [
     { name: 'Jan', revenue: 450000, expenses: 310000, profit: 140000 },
     { name: 'Feb', revenue: 520000, expenses: 340000, profit: 180000 },
     { name: 'Mar', revenue: 380000, expenses: 260000, profit: 120000 },

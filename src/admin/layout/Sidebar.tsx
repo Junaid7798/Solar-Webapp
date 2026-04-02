@@ -6,8 +6,7 @@ import {
   ChevronLeft, ChevronRight, Zap,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-
-const BUSINESS_NAME = import.meta.env.VITE_BUSINESS_NAME || 'Asrar Solar';
+import { config } from '../../config';
 
 const navSections = [
   {
@@ -61,8 +60,8 @@ export const Sidebar = () => {
               transition={{ duration: 0.15 }}
               className="font-display font-bold text-base text-white whitespace-nowrap overflow-hidden"
             >
-              {BUSINESS_NAME.split(' ')[0]}{' '}
-              <span className="text-amber">{BUSINESS_NAME.split(' ').slice(1).join(' ') || 'Solar'}</span>
+              {config.businessName.split(' ')[0]}{' '}
+              <span className="text-amber">{config.businessName.split(' ').slice(1).join(' ') || 'Solar'}</span>
             </motion.span>
           )}
         </AnimatePresence>

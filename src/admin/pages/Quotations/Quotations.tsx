@@ -2,7 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { Plus, Search, ExternalLink, Trash2, MapPin, Calendar, MoreVertical } from 'lucide-react';
 import { motion } from 'motion/react';
 import { usePersistedData } from '../../hooks/usePersistedData';
+import { useConfirm } from '../../hooks/useConfirm';
 import { QuotationDrawer } from './QuotationDrawer';
+import { config } from '../../../config';
 
 const container = {
   hidden: { opacity: 0 },
@@ -11,7 +13,7 @@ const container = {
 
 const itemAnim = {
   hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } },
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, damping: 20, stiffness: 200 } },
 };
 
 interface Quotation {
@@ -35,6 +37,7 @@ export const Quotations = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { openConfirm, ConfirmDialogWrapper } = useConfirm();
 
   const defaultQuotations: Quotation[] = [
     { id: 'QT-2024-001', customer: 'Suresh Patil', city: 'Nashik', size: '3kW', date: '12 Mar 2026', status: 'Sent', total: '₹92,000' },
@@ -51,14 +54,27 @@ export const Quotations = () => {
     return matchSearch && matchStatus;
   }), [quotations, searchTerm, statusFilter]);
 
-  const handleDelete = (id: string) => {
-    if (!window.confirm('Delete this quotation? This cannot be undone.')) return;
-    setQuotations((prev: any[]) => prev.filter((q) => q.id !== id));
+  const handleDelete = async (id: string) => {
+    const confirmed = await openConfirm({
+      title: 'Delete Quotation',
+      message: 'Are you sure? This cannot be undone.',
+    });
+    if (confirmed) {
+      setQuotations((prev: any[]) => prev.filter((q) => q.id !== id));
+    }
   };
 
   const handleShare = (quote: any) => {
     const message = `Namaste ${quote.customer} ji, your solar quotation (${quote.id}) is ready. System: ${quote.size}. Amount: ${quote.total}. Please contact us for details.`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    const phone = String(quote.phone || '').replace(/\D/g, '');
+    const phoneSuffix = phone.length >= 10 ? `91${phone.slice(-10)}` : config.businessPhone;
+    window.open(`https://wa.me/${phoneSuffix}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  const handleStatusChange = (id: string, newStatus: string) => {
+    setQuotations((prev: any[]) =>
+      prev.map((q) => (q.id === id ? { ...q, status: newStatus } : q))
+    );
   };
 
   return (
@@ -194,9 +210,16 @@ export const Quotations = () => {
                     <td className="p-4 text-sm text-white/40">{quote.date}</td>
                     <td className="p-4 font-bold text-white">{quote.total}</td>
                     <td className="p-4">
-                      <span className={`inline-block px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${statusColors[quote.status] ?? 'bg-white/5 text-white/40'}`}>
-                        {quote.status}
-                      </span>
+                      <select
+                        value={quote.status}
+                        onChange={(e) => handleStatusChange(quote.id, e.target.value)}
+                        className={`text-[10px] font-bold px-2 py-1 rounded-md border-0 cursor-pointer uppercase tracking-wider ${statusColors[quote.status] ?? 'bg-white/5 text-white/40'}`}
+                        style={{ background: 'transparent' }}
+                      >
+                        {['Sent', 'Accepted', 'Rejected', 'Revised'].map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
@@ -234,6 +257,7 @@ export const Quotations = () => {
         onClose={() => setIsDrawerOpen(false)}
         onSave={(q) => setQuotations((prev: any[]) => [q, ...prev])}
       />
+      <ConfirmDialogWrapper />
     </>
   );
 };

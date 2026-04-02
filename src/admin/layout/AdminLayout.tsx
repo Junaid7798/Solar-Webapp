@@ -14,7 +14,10 @@ export const AdminLayout = ({ children, onLogout }: { children: React.ReactNode,
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden relative min-w-0">
         <TopBar onLogout={onLogout} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#07090F] p-4 md:p-6 pb-24 md:pb-6">
+        <main
+          className="flex-1 overflow-x-hidden overflow-y-auto bg-[#07090F] p-4 md:p-6"
+          style={{ paddingBottom: 'max(6rem, calc(5rem + env(safe-area-inset-bottom)))' }}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

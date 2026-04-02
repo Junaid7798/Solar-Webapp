@@ -22,13 +22,13 @@ export const VisualProof = () => {
   const galleryImages = [
     { id: 1, url: '/images/house-rooftop.jpg', category: 'Residential', title: 'Nashik Villa' },
     { id: 2, url: '/images/engineers-inspecting.webp', category: 'Commercial', title: 'Pune Factory' },
-    { id: 3, url: '/images/happy-customer.jpeg', category: 'Testimony', title: 'Happy Client' },
+    { id: 3, url: '/images/happy-customer.jpeg', category: 'Testimonial', title: 'Happy Client' },
     { id: 4, url: '/images/livguard-battery.jpeg', category: 'Residential', title: 'Mumbai Apartment' },
-    { id: 5, url: '/images/engineer-farmer.jpg', category: 'Testimony', title: 'Satisfied Customer' },
+    { id: 5, url: '/images/engineer-farmer.jpg', category: 'Testimonial', title: 'Satisfied Customer' },
     { id: 6, url: '/images/panel-cleaning.png', category: 'Commercial', title: 'Warehouse Solar' },
   ];
 
-  const tabs = ['all', 'Residential', 'Commercial', 'Testimony'];
+  const tabs = ['all', 'Residential', 'Commercial', 'Testimonial'];
 
   return (
     <section id="gallery" className="py-24 bg-sky-deep relative overflow-hidden">
@@ -72,7 +72,9 @@ export const VisualProof = () => {
               <div className="absolute inset-0 bg-gradient-to-tr from-sun/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
               <img 
                 src="/images/worker-installing.webp" 
-                alt="Solar Installation" 
+                alt="Solar Installation"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover rounded-[2rem] aspect-video transition-transform duration-700 group-hover:scale-105"
               />
             </div>
@@ -172,7 +174,7 @@ export const VisualProof = () => {
                     <span className="text-sun text-[10px] font-bold uppercase tracking-widest mb-2 block">{img.category}</span>
                     <h4 className="text-white text-2xl font-display font-bold leading-tight">{img.title}</h4>
                     
-                    {img.category === 'Testimony' && (
+                    {img.category === 'Testimonial' && (
                       <div className="mt-4 flex gap-1">
                         {[1,2,3,4,5].map(s => <Star key={s} size={14} className="text-sun fill-sun" />)}
                       </div>
@@ -180,10 +182,10 @@ export const VisualProof = () => {
                   </motion.div>
                 </div>
 
-                {img.category === 'Testimony' && (
+                {img.category === 'Testimonial' && (
                   <div className="absolute top-6 right-6 glass px-4 py-2 rounded-full border border-sun/20 flex items-center gap-2 z-20">
                     <div className="w-2 h-2 rounded-full bg-sun animate-pulse" />
-                    <span className="text-[10px] font-bold text-sun uppercase tracking-widest">Verified Testimony</span>
+                    <span className="text-[10px] font-bold text-sun uppercase tracking-widest">Verified Testimonial</span>
                   </div>
                 )}
               </motion.div>

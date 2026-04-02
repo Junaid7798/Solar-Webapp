@@ -10,7 +10,7 @@ const container = {
 
 const itemAnim = {
   hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } },
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, damping: 20, stiffness: 200 } },
 };
 
 interface InventoryItem {

@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { RefreshCw, AlertCircle, Search, Filter, Download, FilePlus, MapPin, Phone, Mail, Calendar as CalendarIcon, ChevronRight, X, Zap, Home, MessageSquare } from 'lucide-react';
+import { RefreshCw, AlertCircle, Search, Filter, Download, FilePlus, MapPin, Phone, Mail, Calendar as CalendarIcon, X, Zap, Home, MessageSquare } from 'lucide-react';
 import { QuotationDrawer } from '../Quotations/QuotationDrawer';
 import { motion, AnimatePresence } from 'motion/react';
+import { usePersistedData } from '../../hooks/usePersistedData';
+import type { Lead } from '../../../types/lead';
 
 const container = {
   hidden: { opacity: 0 },
@@ -18,22 +20,6 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-interface Lead {
-  timestamp?: string; Timestamp?: string;
-  name?: string; Name?: string;
-  phone?: string; Phone?: string;
-  email?: string; Email?: string;
-  city?: string; City?: string;
-  address?: string; Address?: string;
-  services?: string; Services?: string;
-  bill?: string; Bill?: string;
-  size?: string; Size?: string;
-  roof?: string; Roof?: string;
-  time?: string; Time?: string;
-  message?: string; Message?: string;
-  [key: number]: string;
-}
-
 export const Leads = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +34,7 @@ export const Leads = () => {
   const [detailLead, setDetailLead] = useState<Lead | null>(null);
 
   const GOOGLE_SHEETS_URL = import.meta.env.VITE_GOOGLE_SHEETS_URL as string | undefined;
+  const [, setQuotations] = usePersistedData('quotations', []);
 
   const openQuoteDrawer = (lead: Lead) => {
     setSelectedLead(lead);
@@ -55,12 +42,31 @@ export const Leads = () => {
   };
 
   useEffect(() => {
-    fetchLeads();
-  }, []);
+    const controller = new AbortController();
+    const run = async () => {
+      if (!GOOGLE_SHEETS_URL) return;
+      setIsLoading(true);
+      setFetchError('');
+      try {
+        const response = await fetch(GOOGLE_SHEETS_URL, { signal: controller.signal });
+        if (!response.ok) throw new Error('Failed to fetch data');
+        const data: Lead[] = await response.json();
+        setLeads([...data].reverse());
+      } catch (err: unknown) {
+        if ((err as Error).name !== 'AbortError') {
+          const message = err instanceof Error ? err.message : 'Failed to load leads';
+          setFetchError(message);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    run();
+    return () => controller.abort();
+  }, [GOOGLE_SHEETS_URL]);
 
   const fetchLeads = async () => {
     if (!GOOGLE_SHEETS_URL) return;
-    
     setIsLoading(true);
     setFetchError('');
     try {
@@ -144,6 +150,13 @@ export const Leads = () => {
           <h1 className="text-2xl md:text-3xl font-display font-bold text-white mb-1">Leads</h1>
           <p className="text-xs md:text-sm text-white/40">Manage your website quote requests.</p>
         </div>
+
+        {!GOOGLE_SHEETS_URL && (
+          <div className="bg-amber-dim border border-amber/30 text-amber px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2">
+            <AlertCircle size={16} />
+            Set VITE_GOOGLE_SHEETS_URL in .env to load leads from Google Sheets.
+          </div>
+        )}
         
         <div className="flex gap-2 w-full md:w-auto">
           <button 
@@ -416,6 +429,7 @@ export const Leads = () => {
         isOpen={isQuoteDrawerOpen}
         onClose={() => setIsQuoteDrawerOpen(false)}
         leadData={selectedLead}
+        onSave={(q: any) => setQuotations((prev: any[]) => [q, ...prev])}
       />
     </motion.div>
   );

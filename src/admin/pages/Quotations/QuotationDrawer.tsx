@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Save, FileDown, Send, Calculator, Loader2 } from 'lucide-react';
+import { X, FileDown, Send, Calculator, Loader2 } from 'lucide-react';
 import { generateQuotationPDF } from '../../utils/generateQuotationPDF';
+import { config } from '../../../config';
 
-const BUSINESS_NAME = import.meta.env.VITE_BUSINESS_NAME || 'Asrar Solar';
-const BUSINESS_PHONE = import.meta.env.VITE_BUSINESS_PHONE || '918237655610';
+const BUSINESS_NAME = config.businessName;
+const BUSINESS_PHONE = config.businessPhone;
 
 interface QuotationDrawerProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ interface FormErrors {
 }
 
 export const QuotationDrawer = ({ isOpen, onClose, leadData, onSave }: QuotationDrawerProps) => {
-  const [formData, setFormData] = useState({
+  const defaultFormState = {
     customerName: '',
     customerPhone: '',
     customerEmail: '',
@@ -39,7 +40,9 @@ export const QuotationDrawer = ({ isOpen, onClose, leadData, onSave }: Quotation
     warrantyInverter: '5 Year Manufacturer Warranty',
     warrantyInstallation: '2 Year Workmanship Warranty',
     validDays: 30,
-  });
+  };
+
+  const [formData, setFormData] = useState(defaultFormState);
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isGenerating, setIsGenerating] = useState(false);
@@ -68,6 +71,7 @@ export const QuotationDrawer = ({ isOpen, onClose, leadData, onSave }: Quotation
   useEffect(() => {
     if (isOpen && !leadData) {
       setErrors({});
+      setFormData(defaultFormState);
     }
   }, [isOpen, leadData]);
 
@@ -120,6 +124,11 @@ export const QuotationDrawer = ({ isOpen, onClose, leadData, onSave }: Quotation
     }
   };
 
+  const sanitizePhone = (phone: string): string => {
+    const digits = phone.replace(/\D/g, '');
+    return digits.length >= 10 ? `91${digits.slice(-10)}` : BUSINESS_PHONE;
+  };
+
   const handleGeneratePDF = async (action: 'download' | 'share') => {
     if (!validate()) return;
     setIsGenerating(true);
@@ -140,11 +149,11 @@ export const QuotationDrawer = ({ isOpen, onClose, leadData, onSave }: Quotation
             await navigator.share({ files: [file], title: 'Solar Quotation', text: message });
           } catch {
             doc.save(`Solar_Quote_${data.customerName.replace(/\s+/g, '_')}.pdf`);
-            window.open(`https://wa.me/91${data.customerPhone}?text=${encodeURIComponent(message)}`);
+            window.open(`https://wa.me/${sanitizePhone(data.customerPhone)}?text=${encodeURIComponent(message)}`);
           }
         } else {
           doc.save(`Solar_Quote_${data.customerName.replace(/\s+/g, '_')}.pdf`);
-          window.open(`https://wa.me/91${data.customerPhone}?text=${encodeURIComponent(message)}`);
+          window.open(`https://wa.me/${sanitizePhone(data.customerPhone)}?text=${encodeURIComponent(message)}`);
         }
       }
     } finally {
@@ -152,8 +161,8 @@ export const QuotationDrawer = ({ isOpen, onClose, leadData, onSave }: Quotation
     }
   };
 
-  const inputClass = (field?: string) =>
-    `admin-input w-full px-4 py-2.5 rounded-xl ${field ? 'border-red-500/60' : ''}`;
+  const inputClass = (error?: string) =>
+    `admin-input w-full px-4 py-2.5 rounded-xl ${error ? 'border-red-500/60' : ''}`;
 
   return (
     <AnimatePresence>

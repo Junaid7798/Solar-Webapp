@@ -10,6 +10,8 @@ export const CustomCursor = () => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
 
+    if (window.innerWidth <= 768) return;
+
     const updateMousePosition = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };

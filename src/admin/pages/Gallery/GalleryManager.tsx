@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Image as ImageIcon, Plus, Trash2, Search, Filter, Upload, Eye, Star, Camera, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BeforeAfterSlider } from '../../../components/ui/BeforeAfterSlider';
 import { usePersistedData } from '../../hooks/usePersistedData';
+import { useConfirm } from '../../hooks/useConfirm';
 
 const container = {
   hidden: { opacity: 0 },
@@ -11,12 +12,15 @@ const container = {
 
 const itemAnim = {
   hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } },
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, damping: 20, stiffness: 200 } },
 };
 
 export const GalleryManager = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'before-after'>('grid');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { openConfirm, ConfirmDialogWrapper } = useConfirm();
 
   const [images, setImages] = usePersistedData('gallery_images', [
     { id: 1, url: '/images/house-rooftop.jpg', category: 'Residential', title: '3kW Nashik Project' },
@@ -35,10 +39,40 @@ export const GalleryManager = () => {
     }
   ]);
 
-  const tabs = ['all', 'Residential', 'Commercial', 'Testimonials', 'Maintenance'];
+  const tabs = ['all', 'Residential', 'Commercial', 'Maintenance'];
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const newImage = {
+        id: Date.now(),
+        url: reader.result as string,
+        category: 'Residential',
+        title: file.name.replace(/\.[^/.]+$/, ''),
+      };
+      setImages((prev: any) => [newImage, ...prev]);
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleDeleteImage = async (id: number) => {
+    const confirmed = await openConfirm({
+      title: 'Delete Image',
+      message: 'Are you sure? This cannot be undone.',
+    });
+    if (confirmed) {
+      setImages((prev: any) => prev.filter((img: any) => img.id !== id));
+    }
+  };
 
   return (
-    <div className="space-y-6 pb-20">
+    <>
+      <div className="space-y-6 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-display font-bold text-white mb-1">Gallery Manager</h1>
@@ -46,9 +80,14 @@ export const GalleryManager = () => {
         </div>
         
         <div className="flex gap-2 w-full md:w-auto">
-          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-amber text-depth px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-amber/20 active:scale-95">
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-amber text-depth px-4 py-2.5 rounded-xl transition-all font-bold shadow-lg shadow-amber/20 active:scale-95 disabled:opacity-60"
+          >
             <Upload size={18} />
-            <span className="text-sm">Upload</span>
+            <span className="text-sm">{uploading ? 'Uploading...' : 'Upload'}</span>
           </button>
         </div>
       </div>
@@ -109,7 +148,9 @@ export const GalleryManager = () => {
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img 
                     src={img.url} 
-                    alt={img.title} 
+                    alt={img.title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     referrerPolicy="no-referrer"
                   />
@@ -118,17 +159,11 @@ export const GalleryManager = () => {
                       <button className="flex-1 py-2 bg-white/20 backdrop-blur-md rounded-lg text-white text-xs font-bold hover:bg-white/40 transition-colors">
                         View
                       </button>
-                      <button className="p-2 bg-red-500/20 backdrop-blur-md rounded-lg text-red-200 hover:bg-red-500 transition-colors">
+                      <button onClick={() => handleDeleteImage(img.id)} className="p-2 bg-red-500/20 backdrop-blur-md rounded-lg text-red-200 hover:bg-red-500 transition-colors">
                         <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
-                  {img.category === 'Testimonials' && (
-                    <div className="absolute top-3 left-3 bg-amber text-depth px-2 py-1 rounded-lg flex items-center gap-1 shadow-lg">
-                      <Star size={12} fill="currentColor" />
-                      <span className="text-[10px] font-black">TESTIMONY</span>
-                    </div>
-                  )}
                 </div>
                 <div className="p-4">
                   <div className="flex justify-between items-start">
@@ -179,6 +214,7 @@ export const GalleryManager = () => {
           </motion.button>
         </motion.div>
       )}
-    </div>
+      </div>
+    </>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { config } from '../../config';
 import { Menu, X, Phone, Mail, MessageCircle, Sun, Zap } from 'lucide-react';
 
 export const Navbar = () => {
@@ -216,8 +217,12 @@ export const Navbar = () => {
               style={{ borderColor: 'rgba(255,255,255,0.04)' }}
             >
               <div className="flex gap-3">
-                {[MessageCircle, Phone, Mail].map((Icon, i) => (
-                  <a key={i} href="#"
+                {[
+                  { Icon: MessageCircle, href: config.whatsappUrl, label: 'WhatsApp' },
+                  { Icon: Phone, href: `tel:+${config.businessPhone}`, label: 'Call' },
+                  { Icon: Mail, href: `mailto:${config.businessEmail}`, label: 'Email' },
+                ].map(({ Icon, href, label }) => (
+                  <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
                     className="cursor-pointer w-11 h-11 rounded-full flex items-center justify-center transition-all"
                     style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748B' }}>
                     <Icon size={17} />

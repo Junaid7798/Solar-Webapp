@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Briefcase, Plus, Search, Filter, ChevronRight, Clock, CheckCircle2, AlertCircle, DollarSign, MapPin, Calendar } from 'lucide-react';
+import { Briefcase, Plus, Search, Filter, ChevronRight, Clock, CheckCircle2, AlertCircle, DollarSign, MapPin, Calendar, Download } from 'lucide-react';
 import { ProjectDrawer } from './ProjectDrawer';
 import { motion } from 'motion/react';
 import { usePersistedData } from '../../hooks/usePersistedData';
+import { exportToCSV } from '../../utils/exportCSV';
 
 const container = {
   hidden: { opacity: 0 },
@@ -11,7 +12,7 @@ const container = {
 
 const itemAnim = {
   hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } },
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, damping: 20, stiffness: 200 } },
 };
 
 export const Projects = () => {
@@ -62,13 +63,41 @@ export const Projects = () => {
   }), [projects, searchTerm, stageFilter]);
 
   const openProject = (project: any) => {
-    setSelectedProject(project);
+    if (project) {
+      setSelectedProject(project);
+    } else {
+      setSelectedProject({
+        id: `PRJ-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`,
+        customer: '',
+        city: '',
+        size: '',
+        status: 'Site Survey',
+        progress: 0,
+        value: 0,
+        expenses: 0,
+        startDate: new Date().toLocaleDateString('en-IN'),
+      });
+    }
     setIsDrawerOpen(true);
   };
 
   const handleSaveProject = (updated: any) => {
-    setProjects((prev: any[]) =>
-      prev.map((p) => p.id === updated.id ? { ...p, ...updated } : p)
+    setProjects((prev: any[]) => {
+      const exists = prev.some((p) => p.id === updated.id);
+      return exists
+        ? prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+        : [updated, ...prev];
+    });
+  };
+
+  const handleExport = () => {
+    exportToCSV(
+      'projects',
+      ['ID', 'Customer', 'City', 'Size', 'Status', 'Progress%', 'Value', 'Expenses', 'Profit'],
+      projects.map((p: any) => [
+        p.id, p.customer, p.city, p.size, p.status, p.progress,
+        p.value, p.expenses, (p.value || 0) - (p.expenses || 0),
+      ])
     );
   };
 
@@ -85,13 +114,23 @@ export const Projects = () => {
           <p className="text-xs md:text-sm text-white/40">Track installation progress and finances.</p>
         </div>
         
-        <button 
-          onClick={() => openProject(null)}
-          className="w-full md:w-auto flex items-center justify-center gap-2 bg-amber text-depth px-5 py-2.5 rounded-xl hover:bg-amber-light transition-colors font-bold shadow-sm text-sm"
-        >
-          <Plus size={18} />
-          New Project
-        </button>
+        <div className="flex gap-2 w-full md:w-auto">
+          <button 
+            onClick={handleExport}
+            disabled={projects.length === 0}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-depth border border-white/10 px-4 py-2.5 rounded-xl text-white/70 hover:border-white/20 hover:text-white transition-colors font-bold disabled:opacity-50 text-sm"
+          >
+            <Download size={16} />
+            Export
+          </button>
+          <button 
+            onClick={() => openProject(null)}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-amber text-depth px-5 py-2.5 rounded-xl hover:bg-amber-light transition-colors font-bold shadow-sm text-sm"
+          >
+            <Plus size={18} />
+            New Project
+          </button>
+        </div>
       </div>
 
       {/* Stats Summary */}
@@ -146,7 +185,7 @@ export const Projects = () => {
           >
             <option>All Stages</option>
             <option>Site Survey</option>
-            <option>Procurement</option>
+            <option>Material Procurement</option>
             <option>Installation</option>
             <option>Net Metering</option>
             <option>MSEDCL Approval</option>
